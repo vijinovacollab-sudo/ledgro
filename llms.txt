@@ -1,0 +1,30 @@
+# Ledgro
+
+> Ledgro is a digital khata (credit book), GST billing and daily-report app for kirana and small retail shops in India, made by VJ Hokhmah Pvt. Ltd. (Coimbatore, Tamil Nadu and Ernakulam, Kerala). Website: https://www.ledgro.co.in
+
+## What Ledgro does
+- Digital khata: record credit given and payments received for each customer, with running balances.
+- WhatsApp payment reminders that include the shop's UPI ID, sent in the customer's own language.
+- GST billing: Tax Invoice for regular GST shops, Bill of Supply for composition scheme shops, simple bills for shops without GST. CGST + SGST for same-state customers, IGST for other states, HSN codes, invoice numbers that restart each financial year.
+- Branded bills with the shop's logo, Google Maps location and Instagram handle as tappable links.
+- End-of-day report: sales, cash vs UPI, credit given and collected, expenses.
+- Languages: English, Tamil, Malayalam (Hindi, Kannada, Telugu planned).
+
+## Privacy and security
+- Shop data is stored only on the shop's phone and encrypted with AES-256, locked by a 6-digit PIN.
+- Ledgro's servers never receive shop business data; they store only a random shop ID and plan status for billing.
+- Encrypted backups go to the shop's own Google Drive or email and can be restored on a new phone.
+
+## Pricing (INR, 30-day free trial on every plan)
+- Starter: ₹199/month or ₹1,990/year — khata, WhatsApp reminders, daily report, GST billing up to 300 bills/month.
+- Growth: ₹399/month or ₹3,990/year — adds unlimited billing, stock and low-stock alerts, barcode scanning, automatic reminders.
+- Pro: ₹499/month or ₹4,990/year — adds expiry alerts, supplier khata, up to 3 staff logins, GST reports for the CA.
+- Payments through Razorpay: UPI AutoPay, card or net banking.
+
+## Who it is for
+Kirana stores, provision shops, supermarkets, medical shops and other small retailers in India, starting in Tamil Nadu and Kerala.
+
+## Links
+- Home: https://www.ledgro.co.in/
+- Web app: https://www.ledgro.co.in/app/
+- Company: VJ Hokhmah Pvt. Ltd., Ernakulam, Kerala, India
