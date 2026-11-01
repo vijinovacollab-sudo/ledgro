@@ -17,14 +17,20 @@
 
 ## Pricing (INR, 30-day free trial on every plan)
 - Starter: ₹199/month or ₹1,990/year — khata, WhatsApp reminders, daily report, GST billing up to 300 bills/month.
-- Growth: ₹399/month or ₹3,990/year — adds unlimited billing, stock and low-stock alerts, barcode scanning, automatic reminders.
-- Pro: ₹499/month or ₹4,990/year — adds expiry alerts, supplier khata, up to 3 staff logins, GST reports for the CA.
+- Growth (coming soon): ₹399/month or ₹3,990/year — will add unlimited billing, stock and low-stock alerts, barcode scanning, automatic reminders.
+- Pro (coming soon): ₹499/month or ₹4,990/year — will add expiry alerts, supplier khata, up to 3 staff logins, GST reports for the CA.
 - Payments through Razorpay: UPI AutoPay, card or net banking.
 
 ## Who it is for
 Kirana stores, provision shops, supermarkets, medical shops and other small retailers in India, starting in Tamil Nadu and Kerala.
 
+## Contact
+- WhatsApp / phone: +91 77364 40633
+
 ## Links
 - Home: https://www.ledgro.co.in/
 - Web app: https://www.ledgro.co.in/app/
+- Privacy Policy: https://www.ledgro.co.in/privacy
+- Terms: https://www.ledgro.co.in/terms
+- Refund policy: https://www.ledgro.co.in/refund
 - Company: VJ Hokhmah Pvt. Ltd., Ernakulam, Kerala, India
