@@ -90,3 +90,4 @@ Two honest limits to tell shops:
 - **Phone OTP login and multi-phone staff logins.** Data stays on one phone in this version; a new phone uses Restore.
 
 <!-- deployed with Razorpay keys + Upstash store, 2026-11-02 -->
+<!-- redeploy after secret update -->
