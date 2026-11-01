@@ -3,6 +3,6 @@
 window.LEDGRO_CONFIG = {
   pwa: true,                 // offline support + "Add to Home screen"
   apiBase: "/api",           // the small licence server (Vercel functions in /api)
-  razorpayKeyId: "rzp_live_Tv32PJl3vnwwRn",       // Razorpay Key ID, e.g. rzp_live_xxxxx (public, safe here)
+  razorpayKeyId: "rzp_live_Tv5iueXT8YJhf7",       // Razorpay Key ID, e.g. rzp_live_xxxxx (public, safe here)
   googleClientId: "",        // Google OAuth Client ID for Drive backup, e.g. 1234-abc.apps.googleusercontent.com
 };
