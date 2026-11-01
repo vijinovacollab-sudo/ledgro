@@ -88,3 +88,5 @@ Two honest limits to tell shops:
 
 - **Automatic WhatsApp reminders and the scheduled 9:30 pm report.** These need the WhatsApp Business API and the shop's explicit permission to send only the reminder details (customer number + amount) to the server at send time.
 - **Phone OTP login and multi-phone staff logins.** Data stays on one phone in this version; a new phone uses Restore.
+
+<!-- deployed with Razorpay keys + Upstash store, 2026-11-02 -->
