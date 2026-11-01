@@ -6,5 +6,8 @@ module.exports = async (req, res) => {
   res.setHeader("Cache-Control", "no-store");
   const lic = await store.get(`lic:${shop}`).catch(() => null);
   if (!lic) return res.status(200).json({ status: "none" });
-  res.status(200).json({ status: lic.status, plan: lic.plan, billing: lic.billing, current_end: lic.current_end });
+  // manual activations end on their own date; Razorpay ones are kept current by the webhook
+  let status = lic.status;
+  if (lic.source === "manual" && lic.current_end && lic.current_end * 1000 < Date.now()) status = "cancelled";
+  res.status(200).json({ status, plan: lic.plan, billing: lic.billing, current_end: lic.current_end });
 };
