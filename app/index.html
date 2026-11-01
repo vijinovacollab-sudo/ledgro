@@ -162,6 +162,9 @@ button.item{width:100%;background:none;border-left:0;border-right:0;border-botto
 .plan ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14px}
 .plan li{display:flex;gap:8px}
 .plan li::before{content:"✓";color:var(--paid);font-weight:700}
+.lockcard{border:1.5px solid var(--brand);display:flex;flex-direction:column;gap:10px}.lockcard p{margin:0;color:var(--muted);font-size:14px}
+.shopid{display:flex;flex-direction:column;gap:8px}.shopid code{display:block;font-size:13px;word-break:break-all;margin-top:2px}.shopid small{color:var(--muted)}
+.pill.soon{background:var(--line,#eee);color:var(--muted)}
 .pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--brand-soft);color:var(--brand)}
 
 /* nav */
@@ -363,6 +366,7 @@ home(){
   acts.sort((a,b)=>a.ts<b.ts?1:-1);
   return `
   ${S.sample?`<div class="note">${esc(t("sample_note"))}</div>`:""}
+  ${isLocked()?lockHTML():""}
   ${nudgeHTML()}
   <div class="tiles">
     <div class="tile hero"><div class="lbl">${esc(t("today_sales"))} · ${nice(TODAY)}</div><div class="val num">${inr(st.sales)}</div>
@@ -470,12 +474,13 @@ more(){
   </section>
   <section style="display:flex;flex-direction:column;gap:12px">
     <div class="sec-h"><h2>${esc(t("plans"))}</h2><small class="num">${esc(t("bills_used",{n:mBills}))}</small></div>
-    ${S.plan.name==="trial"?`<div class="banner"><span>⏳</span><span>${esc(t("trial_left",{n:left}))}</span></div>`:`<div class="banner"><span>✓</span><span>${esc(t("active_plan",{p:S.plan.name[0].toUpperCase()+S.plan.name.slice(1)}))}</span></div>`}
+    ${isLocked()?lockHTML():S.plan.name==="trial"?`<div class="banner"><span>⏳</span><span>${esc(t("trial_left",{n:left}))}</span></div>`:`<div class="banner"><span>✓</span><span>${esc(t("active_plan",{p:S.plan.name[0].toUpperCase()+S.plan.name.slice(1)}))}</span></div>`}
+    <div class="card shopid"><div><small>${esc(t("shop_id"))}</small><code class="num" id="sidtxt">${esc(META.shopId||"")}</code></div><div class="row"><button class="btn sm" id="copyid">${esc(t("copy"))}</button><a class="btn sm" href="${supportLink()}" target="_blank" rel="noopener">${esc(t("whatsapp_us"))}</a></div><small class="muted">${esc(t("activate_help"))}</small></div>
     <div class="plans">${plans.map(([id,name,price,fs])=>`<div class="plan ${S.plan.name===id?"cur":""}">
-      <header><b>${name}</b>${S.plan.name===id?`<span class="pill">${esc(t("current"))}</span>`:""}</header>
+      <header><b>${name}</b>${S.plan.name===id?`<span class="pill">${esc(t("current"))}</span>`:id!=="starter"?`<span class="pill soon">${esc(t("coming_soon"))}</span>`:""}</header>
       <div class="price num">₹${price}<small>${esc(t("per_month"))} · ₹${price*10}/yr</small></div>
       <ul>${fs.map(f=>`<li>${esc(t(f))}</li>`).join("")}</ul>
-      ${S.plan.name===id?"":`<button class="btn primary block" data-plan="${id}" data-price="${price}" data-pname="${name}">${esc(t("choose_plan"))}</button>`}
+      ${S.plan.name===id||id!=="starter"?"":`<button class="btn primary block" data-plan="${id}" data-price="${price}" data-pname="${name}">${esc(t("choose_plan"))}</button>`}
     </div>`).join("")}</div>
   </section>
   ${moreExtra()}`;
@@ -506,6 +511,7 @@ function bindView(){
   document.querySelectorAll('input[name="gst"]').forEach(r=>r.onchange=()=>{S.shop.gstType=r.value;persist();render()});
   const lg=$("#slogo");if(lg)lg.onchange=()=>{const f=lg.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>shrink(rd.result,v=>{S.shop.logo=v;persist();render();toast(t("saved"))});rd.readAsDataURL(f)};
   document.querySelectorAll("[data-plan]").forEach(b=>b.onclick=()=>rzpSheet(b.dataset.plan,b.dataset.pname,+b.dataset.price));
+  const cid=$("#copyid");if(cid)cid.onclick=async()=>{const v=META.shopId||"";try{await navigator.clipboard.writeText(v)}catch(e){const r=document.createRange();r.selectNodeContents($("#sidtxt"));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);document.execCommand&&document.execCommand("copy")}toast(t("copied"))};
   bindExtra();
 }
 function shrink(src,cb){const im=new Image();im.onload=()=>{const c=document.createElement("canvas");const s=Math.min(1,160/Math.max(im.width,im.height));c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/png"))};im.onerror=()=>cb(src);im.src=src}
@@ -636,6 +642,21 @@ ta:{welcome_title:"Ledgro-க்கு வரவேற்கிறோம்",wel
 ml:{welcome_title:"Ledgro-ലേക്ക് സ്വാഗതം",welcome_sub:"നിങ്ങളുടെ കടയുടെ കണക്ക്, ബിൽ, റിപ്പോർട്ട്. ഈ ഫോണിൽ മാത്രം പൂട്ടി സൂക്ഷിക്കുന്നു.",setup_shop:"എന്റെ കട സജ്ജമാക്കുക",try_sample:"സാമ്പിൾ കട ഉപയോഗിച്ച് നോക്കുക",restore_backup:"ബാക്കപ്പിൽ നിന്ന് തിരികെ എടുക്കുക",next:"അടുത്തത്",back:"പിന്നോട്ട്",create_pin:"6 അക്ക PIN ഉണ്ടാക്കുക",confirm_pin:"PIN വീണ്ടും നൽകുക",pin_why:"നിങ്ങളുടെ ഡാറ്റ ഈ PIN കൊണ്ട് ഈ ഫോണിൽ പൂട്ടിയിരിക്കുന്നു. Ledgro-ക്ക് അത് കാണാനോ മാറ്റാനോ കഴിയില്ല; അതിനാൽ ബാക്കപ്പ് സൂക്ഷിക്കുക.",pin_mismatch:"PIN ഒത്തുപോകുന്നില്ല. വീണ്ടും ശ്രമിക്കുക.",pin_short:"കൃത്യം 6 അക്കങ്ങൾ വേണം.",enter_pin:"നിങ്ങളുടെ PIN നൽകുക",unlock:"തുറക്കുക",wrong_pin:"തെറ്റായ PIN. വീണ്ടും ശ്രമിക്കുക.",wait_secs:"നിരവധി തെറ്റുകൾ. {n} സെക്കൻഡ് കാത്തിരിക്കുക.",forgot_pin:"PIN മറന്നോ?",forgot_help:"PIN ഇല്ലാതെ ഈ ഡാറ്റ തുറക്കാനാകില്ല. ബാക്കപ്പ് തിരികെ എടുക്കുക, അല്ലെങ്കിൽ ഈ ഫോണിലെ ഡാറ്റ മായ്ച്ച് വീണ്ടും തുടങ്ങുക.",erase_all:"ഈ ഫോണിലെ എല്ലാ ഡാറ്റയും മായ്ക്കുക",erase_confirm:"ഇത് ഈ ഫോണിലെ കണക്ക്, ബിൽ, ക്രമീകരണങ്ങൾ മായ്ക്കും. ബാക്കപ്പുകൾക്ക് മാറ്റമില്ല.",yes_erase:"അതെ, മായ്ക്കുക",lock_now:"ഇപ്പോൾ പൂട്ടുക",security:"സുരക്ഷ",encrypted_note:"ഈ ഫോണിൽ AES-256 കൊണ്ട് പൂട്ടിയിരിക്കുന്നു. നിങ്ങളുടെ PIN-ന് മാത്രമേ തുറക്കാനാകൂ.",change_pin:"PIN മാറ്റുക",current_pin:"ഇപ്പോഴത്തെ PIN",new_pin:"പുതിയ 6 അക്ക PIN",auto_lock:"ഓട്ടോ-ലോക്ക് സമയം",minutes:"{n} മിനിറ്റ്",backup:"ബാക്കപ്പ്",backup_drive:"Google Drive-ൽ ബാക്കപ്പ്",restore_drive:"Google Drive-ൽ നിന്ന് തിരികെ എടുക്കുക",share_backup:"ബാക്കപ്പ് ഫയൽ അയയ്ക്കുക (ഇമെയിൽ, WhatsApp)",restore_file:"ബാക്കപ്പ് ഫയലിൽ നിന്ന് തിരികെ എടുക്കുക",last_backup:"അവസാന ബാക്കപ്പ്: {t}",never:"ഒരിക്കലുമില്ല",backup_done:"ബാക്കപ്പ് സേവ് ചെയ്തു",backup_fail:"ബാക്കപ്പ് പരാജയപ്പെട്ടു. ഇന്റർനെറ്റ് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.",backup_nudge:"കഴിഞ്ഞ 24 മണിക്കൂറിൽ ബാക്കപ്പ് ഇല്ല. കണക്ക് നഷ്ടപ്പെടാതിരിക്കാൻ ഇപ്പോൾ ബാക്കപ്പ് ചെയ്യുക.",backup_pin:"ഈ ബാക്കപ്പ് എടുത്തപ്പോഴുള്ള PIN നൽകുക",restored:"ബാക്കപ്പ് തിരികെ എടുത്തു",bad_file:"ഇത് Ledgro ബാക്കപ്പ് ഫയൽ അല്ല.",no_drive_backup:"ഈ Google അക്കൗണ്ടിൽ Ledgro ബാക്കപ്പ് ഇല്ല.",products:"സാധനങ്ങൾ",add_common:"12 സാധാരണ സാധനങ്ങൾ ചേർക്കുക",edit:"തിരുത്തുക",load_sample:"സാമ്പിൾ കട ലോഡ് ചെയ്യുക (ഡെമോയ്ക്ക്)",sample_confirm:"ഈ ഫോണിലെ ഡാറ്റ സാമ്പിൾ കടയാക്കി മാറ്റണോ?",yes_replace:"അതെ, മാറ്റുക",step:"ഘട്ടം {n} / 3",plan_wait:"പണം ലഭിച്ചു. നിങ്ങളുടെ പ്ലാൻ സജീവമാക്കുന്നു…",pay_fail:"പണമടയ്ക്കൽ തുടങ്ങാനായില്ല. ഇന്റർനെറ്റ് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.",monthly:"പ്രതിമാസം",yearly:"വാർഷികം",state:"സംസ്ഥാനം",drive_note:"നിങ്ങളുടെ സ്വന്തം Google Drive-ൽ പൂട്ടിയ ഫയലായി സൂക്ഷിക്കുന്നു. Ledgro അത് കാണില്ല.",backup_here:"ഇപ്പോൾ ബാക്കപ്പ് ചെയ്യുക",pin_changed:"PIN മാറ്റി",shop_required:"കടയുടെ പേര് നൽകുക."}
 };
 for(const l in T2)Object.assign(T[l],T2[l]);
+const T3={
+en:{trial_ended:"Your 30-day free trial has ended",locked_body:"Your data is safe and you can still view it. To add new entries and bills, choose the Starter plan or message us on WhatsApp.",coming_soon:"Coming soon",whatsapp_us:"WhatsApp us",shop_id:"Shop ID",copy:"Copy",copied:"Copied",activate_help:"To activate your plan by UPI or bank transfer, send this Shop ID to our team on WhatsApp."},
+ta:{trial_ended:"உங்கள் 30 நாள் இலவச சோதனை முடிந்தது",locked_body:"உங்கள் தரவு பாதுகாப்பாக உள்ளது, அதைப் பார்க்கலாம். புதிய பதிவுகள் மற்றும் பில்கள் சேர்க்க Starter திட்டத்தைத் தேர்ந்தெடுக்கவும் அல்லது WhatsApp-இல் எங்களைத் தொடர்புகொள்ளவும்.",coming_soon:"விரைவில்",whatsapp_us:"WhatsApp-இல் தொடர்புகொள்ள",shop_id:"கடை ID",copy:"நகலெடு",copied:"நகலெடுக்கப்பட்டது",activate_help:"UPI அல்லது வங்கி மூலம் திட்டத்தைச் செயல்படுத்த, இந்த கடை ID-ஐ WhatsApp-இல் எங்கள் குழுவுக்கு அனுப்பவும்."},
+ml:{trial_ended:"നിങ്ങളുടെ 30 ദിവസത്തെ സൗജന്യ ട്രയൽ അവസാനിച്ചു",locked_body:"നിങ്ങളുടെ ഡാറ്റ സുരക്ഷിതമാണ്, അത് കാണാം. പുതിയ എൻട്രികളും ബില്ലുകളും ചേർക്കാൻ Starter പ്ലാൻ തിരഞ്ഞെടുക്കുക, അല്ലെങ്കിൽ WhatsApp-ൽ ഞങ്ങളെ ബന്ധപ്പെടുക.",coming_soon:"ഉടൻ വരുന്നു",whatsapp_us:"WhatsApp-ൽ ബന്ധപ്പെടുക",shop_id:"ഷോപ്പ് ID",copy:"കോപ്പി",copied:"കോപ്പി ചെയ്തു",activate_help:"UPI അല്ലെങ്കിൽ ബാങ്ക് വഴി പ്ലാൻ ആക്ടിവേറ്റ് ചെയ്യാൻ, ഈ ഷോപ്പ് ID WhatsApp-ൽ ഞങ്ങളുടെ ടീമിന് അയക്കുക."}};
+for(const l in T3)Object.assign(T[l],T3[l]);
+
+/* ---- trial lock + support ---- */
+const SUPPORT_WA="917736440633";
+function isLocked(){return !!(S&&!S.sample&&S.plan&&S.plan.name==="trial"&&S.plan.trialEnd&&S.plan.trialEnd<TODAY)}
+function supportLink(){return "https://wa.me/"+SUPPORT_WA+"?text="+encodeURIComponent("Hi Ledgro team, I want to activate my plan. Shop ID: "+((META&&META.shopId)||"")+(S&&S.shop&&S.shop.name?" ("+S.shop.name+")":""))}
+function lockHTML(){return `<div class="card lockcard"><b>🔒 ${esc(t("trial_ended"))}</b><p>${esc(t("locked_body"))}</p><div class="row"><button class="btn primary" data-go="more">${esc(t("choose_plan"))}</button><a class="btn" href="${supportLink()}" target="_blank" rel="noopener">${esc(t("whatsapp_us"))}</a></div></div>`}
+function lockedSheet(){sheet(`<div class="sheet-h"><h3>🔒 ${esc(t("trial_ended"))}</h3><button class="x" data-close aria-label="${esc(t("close"))}">×</button></div><p>${esc(t("locked_body"))}</p><div class="row"><button class="btn primary" id="lkplan">${esc(t("choose_plan"))}</button><a class="btn" href="${supportLink()}" target="_blank" rel="noopener">${esc(t("whatsapp_us"))}</a></div>`,()=>{$("#lkplan").onclick=()=>{close();go("more")}})}
+function guard(fn){return function(...a){if(isLocked()){lockedSheet();return}return fn.apply(this,a)}}
+for(const k of ["addcust","newprod","savebill","addexp"])ACTS[k]=guard(ACTS[k]);
+entrySheet=guard(entrySheet);editProd=guard(editProd);
 
 /* ---- IndexedDB key-value ---- */
 let _db;
@@ -915,7 +936,7 @@ function rzpSheet(id,name,price){
     <button class="btn primary block" id="rzok">${esc(live?t("choose_plan"):t("activate_demo"))}</button>`,()=>{
     document.querySelectorAll("[data-b]").forEach(b=>b.onclick=()=>{billing=b.dataset.b;draw()});
     $("#rzok").onclick=async()=>{
-      if(!live){if(API!==undefined){toast("Online payments open soon. Our team will activate your plan.");return}S.plan={...S.plan,name:id,billing};persist();close();render();toast("✓ "+name);return}
+      if(!live){if(API!==undefined){window.open(supportLink(),"_blank","noopener");return}S.plan={...S.plan,name:id,billing};persist();close();render();toast("✓ "+name);return}
       $("#rzok").disabled=true;
       try{const r=await fetch(`${API}/subscribe`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({shop:META.shopId,plan:id,billing,phone:S.shop.phone})});
         const j=await r.json();if(!r.ok||!j.subscription_id)throw new Error(j.error||"subscribe");
