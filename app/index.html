@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#B91725">
+<meta name="description" content="Ledgro: encrypted khata, GST billing and daily reports for kirana shops. By VJ Hokhmah Pvt. Ltd.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html,body{height:100%}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Ledgro</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Baloo+Chettan+2:wght@600;700&family=Baloo+Thambi+2:wght@600;700&family=Noto+Sans+Malayalam:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=Noto+Sans:wght@400;600&display=swap">
+<style>
+/* Layout: a phone-width app column in VJ Hokhmah red — sticky shop header, scrolling view, fixed bottom tab bar; PIN gate screens before unlock. */
+:root{
+  --bg:#F8F4F4; --surface:#FFFFFF; --ink:#1E1416; --muted:#6B5A5D; --line:#EBDFE1;
+  --brand:#B91725; --brand-ink:#FFFFFF; --brand-soft:#FBE8EA;
+  --amber:#B91725; --amber-ink:#FFFFFF; --amber-soft:#FDF1DD;
+  --owe:#C2410C; --owe-soft:#FDEDE4; --paid:#15803D; --paid-soft:#E4F4E8;
+  --paper:#FFFFFF; --paper-ink:#1B1B1B; --paper-muted:#666666; --paper-line:#D9D9D9;
+  --scrim:rgba(30,10,14,.45);
+  --f-display:"Baloo 2","Baloo Thambi 2","Baloo Chettan 2",system-ui,sans-serif;
+  --f-body:"Noto Sans","Noto Sans Tamil","Noto Sans Malayalam",system-ui,sans-serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#140D0E; --surface:#1F1517; --ink:#F3EAEB; --muted:#B6A2A5; --line:#3A2A2D;
+  --brand:#D42B3A; --brand-ink:#FFFFFF; --brand-soft:#3A1519;
+  --amber:#D42B3A; --amber-ink:#FFFFFF; --amber-soft:#3A2C10;
+  --owe:#FB8F5C; --owe-soft:#3A2016; --paid:#5BD08A; --paid-soft:#173322;
+  --scrim:rgba(0,0,0,.6); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#140D0E; --surface:#1F1517; --ink:#F3EAEB; --muted:#B6A2A5; --line:#3A2A2D;
+  --brand:#D42B3A; --brand-ink:#FFFFFF; --brand-soft:#3A1519;
+  --amber:#D42B3A; --amber-ink:#FFFFFF; --amber-soft:#3A2C10;
+  --owe:#FB8F5C; --owe-soft:#3A2016; --paid:#5BD08A; --paid-soft:#173322;
+  --scrim:rgba(0,0,0,.6); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--brand)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.app{max-width:480px;margin:0 auto;min-height:100%;background:var(--bg)}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3,.disp{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--brand);color:var(--brand-ink);
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;align-items:center;gap:10px}
+.mark{width:38px;height:38px;border-radius:10px;background:var(--brand-ink);color:var(--brand);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:18px;overflow:hidden;flex:none}
+.mark img{width:100%;height:100%;object-fit:cover}
+.top .who{min-width:0;flex:1}
+.top .who b{display:block;font-family:var(--f-display);font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .who small{opacity:.85;font-size:12px}
+.langs{display:flex;background:rgba(255,255,255,.16);border-radius:999px;padding:3px;flex:none}
+.langs button{border:0;background:transparent;color:inherit;padding:5px 9px;border-radius:999px;font-size:13px;font-weight:600;min-width:34px}
+.langs button[aria-pressed="true"]{background:var(--brand-ink);color:var(--brand)}
+
+main{padding-block:16px 110px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+
+/* cards & tiles */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;min-width:0}
+.tile .lbl{font-size:13px;color:var(--muted)}
+.tile .val{font-family:var(--f-display);font-weight:700;font-size:26px;line-height:1.1;margin-top:4px}
+.tile.hero{grid-column:1/-1;background:var(--brand);color:var(--brand-ink);border-color:transparent}
+.tile.hero .lbl{color:inherit;opacity:.85}
+.tile.hero .val{font-size:34px}
+.split{display:flex;gap:16px;margin-top:8px;font-size:14px;flex-wrap:wrap}
+.split span{opacity:.9}
+.owe{color:var(--owe)} .paid{color:var(--paid)}
+.banner{display:flex;gap:12px;align-items:center;background:var(--paid-soft);color:var(--ink);border-radius:var(--r);padding:12px 14px;font-size:14px}
+.banner b{color:var(--paid)}
+.note{font-size:12px;color:var(--muted);background:var(--amber-soft);border-radius:8px;padding:8px 10px}
+
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.sec-h h2{font-size:20px}
+.sec-h small{color:var(--muted);font-size:13px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 18px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-weight:600;text-decoration:none;color:var(--ink)}
+.btn.primary{background:var(--amber);border-color:var(--amber);color:var(--amber-ink)}
+.btn.brand{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.owe{background:var(--owe-soft);border-color:transparent;color:var(--owe)}
+.btn.paid{background:var(--paid-soft);border-color:transparent;color:var(--paid)}
+.btn.block{width:100%}
+.btn.sm{min-height:38px;padding:0 12px;font-size:14px;border-radius:10px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row > .btn{flex:1 1 140px}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.quick .btn{flex-direction:column;min-height:76px;font-size:13px;gap:4px;padding:8px}
+.quick svg{width:24px;height:24px}
+
+/* lists */
+.list{display:flex;flex-direction:column}
+.item{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line);min-width:0}
+.item:first-child{border-top:0}
+.item .main{flex:1;min-width:0}
+.item .main b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .main small{color:var(--muted);font-size:13px}
+.item .amt{font-family:var(--f-display);font-weight:700;font-size:18px;text-align:right;white-space:nowrap}
+.item .amt small{display:block;font-family:var(--f-body);font-weight:400;font-size:12px;color:var(--muted)}
+button.item{width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;padding-inline:0}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand);font-weight:700;flex:none}
+.search{width:100%;min-height:48px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:0 14px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-size:14px;white-space:nowrap}
+.chip b{color:var(--muted);font-weight:400;margin-left:4px}
+
+/* form */
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;color:var(--muted);font-weight:600}
+.field input,.field select{min-height:48px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:0 12px;width:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.seg{display:flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{flex:1;min-height:46px;border:0;background:var(--surface);font-weight:600;font-size:14px;padding:0 6px}
+.seg button[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink)}
+.radio{display:flex;flex-direction:column;gap:8px}
+.radio label{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface);font-size:15px}
+.radio input{width:20px;height:20px;accent-color:var(--brand)}
+.check{display:flex;gap:10px;align-items:center;font-size:14px}
+.check input{width:20px;height:20px;accent-color:var(--brand)}
+
+/* cart */
+.cart .line{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.cart .line:first-child{border-top:0}
+.cart .line small{color:var(--muted);font-size:12px}
+.qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:10px}
+.qty button{width:36px;height:36px;border:0;background:none;font-size:18px;font-weight:700;color:var(--brand)}
+.qty span{min-width:26px;text-align:center;font-weight:600}
+.sum{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px;color:var(--muted)}
+.sum .grand{font-family:var(--f-display);font-weight:700;font-size:24px;color:var(--ink)}
+
+/* chart */
+.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:150px;padding-top:18px}
+.bar{display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;min-width:0}
+.bar i{display:block;width:100%;max-width:34px;background:var(--brand-soft);border-radius:6px 6px 2px 2px;position:relative}
+.bar.today i{background:var(--brand)}
+.bar i em{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-style:normal;font-size:11px;color:var(--muted);white-space:nowrap;padding-bottom:2px}
+.bar span{font-size:11px;color:var(--muted)}
+
+/* plans */
+.plans{display:flex;flex-direction:column;gap:12px}
+.plan{border:1px solid var(--line);border-radius:var(--r);padding:16px;background:var(--surface);display:flex;flex-direction:column;gap:10px}
+.plan.cur{border:2px solid var(--brand)}
+.plan header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.plan header b{font-family:var(--f-display);font-size:20px}
+.plan .price{font-family:var(--f-display);font-weight:700;font-size:26px}
+.plan .price small{font-family:var(--f-body);font-size:13px;font-weight:400;color:var(--muted)}
+.plan ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.plan li{display:flex;gap:8px}
+.plan li::before{content:"✓";color:var(--paid);font-weight:700}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--brand-soft);color:var(--brand)}
+
+/* nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav.tabs .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav.tabs button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 10px;font-size:11.5px;color:var(--muted);min-height:58px}
+nav.tabs svg{width:24px;height:24px}
+nav.tabs button[aria-current="page"]{color:var(--brand);font-weight:600}
+nav.tabs button.mid span.dot{width:46px;height:46px;border-radius:14px;background:var(--brand);color:var(--brand-ink);display:grid;place-items:center;margin-top:-18px;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:480px;max-height:92%;overflow:auto;border-radius:18px 18px 0 0;
+  padding-block:8px calc(20px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:14px}
+.grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 0}
+.sheet-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sheet-h h3{font-size:22px}
+.x{border:0;background:var(--surface);width:40px;height:40px;border-radius:50%;font-size:20px;border:1px solid var(--line)}
+.big-bal{text-align:center;padding:8px 0}
+.big-bal .val{font-family:var(--f-display);font-weight:700;font-size:40px;line-height:1}
+.big-bal small{color:var(--muted)}
+.keypad-amt{font-family:var(--f-display);font-weight:700;font-size:36px;text-align:center;min-height:56px;border:1px solid var(--line);border-radius:12px;background:var(--surface);width:100%}
+.words{text-align:center;font-size:13px;color:var(--muted);min-height:18px}
+
+/* invoice */
+.inv{background:var(--paper);color:var(--paper-ink);border-radius:8px;padding:18px 16px;font-size:13px;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.inv .ihead{display:flex;gap:12px;align-items:flex-start;border-bottom:2px solid var(--paper-ink);padding-bottom:10px}
+.inv .ilogo{width:52px;height:52px;border-radius:10px;background:#1E1416;color:#fff;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:22px;flex:none;overflow:hidden}
+.inv .ilogo img{width:100%;height:100%;object-fit:cover}
+.inv h4{margin:0;font-family:var(--f-display);font-size:19px;line-height:1.1}
+.inv .muted{color:var(--paper-muted)}
+.inv .ttl{text-align:center;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:12px;margin:10px 0 6px}
+.inv .meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;margin-bottom:8px}
+.inv .tblwrap{overflow-x:auto}
+.inv table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.inv th{text-align:left;border-bottom:1px solid var(--paper-ink);padding:5px 4px;font-weight:600;white-space:nowrap}
+.inv td{border-bottom:1px solid var(--paper-line);padding:5px 4px;vertical-align:top}
+.inv td.r,.inv th.r{text-align:right}
+.inv .tot{margin-top:8px;display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:12px;font-variant-numeric:tabular-nums}
+.inv .tot .g{font-weight:700;font-size:15px;border-top:2px solid var(--paper-ink);padding-top:4px}
+.inv .foot{margin-top:12px;padding-top:10px;border-top:1px dashed var(--paper-line);display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center}
+.inv .links{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.inv .links a{color:#B91725;font-weight:600;text-decoration:underline;display:inline-flex;gap:4px;align-items:center}
+
+
+/* gates (welcome, setup, PIN) */
+.gate{max-width:480px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:16px;padding-block:32px 40px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.glogo{width:72px;height:72px;border-radius:18px;display:block}
+.gtitle{font-size:28px}
+.gsub{margin:6px 0 0;color:var(--muted)}
+.gstep{font-size:13px;font-weight:600;color:var(--brand);letter-spacing:.06em;text-transform:uppercase}
+.gbtns{display:flex;flex-direction:column;gap:10px}
+.gfine{font-size:13px;color:var(--muted);margin:0;text-align:center}
+.pinin{font-family:var(--f-display);font-size:30px;letter-spacing:.5em;text-align:center;min-height:60px;border:1px solid var(--line);border-radius:12px;background:var(--surface);width:100%;padding:0 0 0 .5em}
+.err{color:var(--owe);font-size:14px;margin:0}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.banner.warn{background:var(--amber-soft);align-items:center;flex-wrap:wrap}
+.btn[disabled]{opacity:.55}
+/* toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 14px;display:flex;gap:14px;align-items:center;font-size:14px;max-width:calc(100% - 32px)}
+.toast button{border:0;background:none;color:var(--amber);font-weight:700}
+.empty{text-align:center;color:var(--muted);padding:18px 8px;font-size:14px}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(30px);opacity:.6}}}
+</style>
+
+<div class="app" id="app"></div>
+<div id="layer"></div>
+
+<script src="config.js"></script>
+<script>
+/* ---------- translations ---------- */
+const T={
+en:{home:"Home",khata:"Khata",bill:"Bill",reports:"Reports",more:"More",today_sales:"Today's sales",outstanding:"To collect",cash:"Cash",upi:"UPI",new_bill:"New bill",add_customer:"Add customer",customers:"Customers",gave_credit:"Gave credit",got_payment:"Got payment",send_reminder:"Send WhatsApp reminder",owes:"owes",settled:"Settled",balance:"Balance",amount:"Amount",note:"Note",save:"Save",cancel:"Cancel",search:"Search customers or products",items:"Items",total:"Total",taxable:"Taxable value",make_bill:"Save & preview bill",share_whatsapp:"Share on WhatsApp",tax_invoice:"Tax Invoice",bill_supply:"Bill of Supply",bill_receipt:"Bill",customer_name:"Customer name",phone:"Mobile number",pay_mode:"Payment",credit_mode:"Credit",end_of_day:"End-of-day report",collected_today:"Collected today",given_today:"Credit given today",bills_today:"Bills today",top_items:"Top items today",expenses:"Expenses today",add_expense:"Add expense",shop_settings:"Shop settings",shop_name:"Shop name",owner:"Owner name",address:"Address",gst_status:"GST status",gst_regular:"I have GST (regular)",gst_comp:"Composition scheme",gst_none:"No GST",gstin:"GSTIN",upi_id:"UPI ID",logo:"Shop logo",maps_link:"Google Maps link",insta:"Instagram handle",language:"Language",plans:"Plans",trial_left:"{n} days left in your free trial",choose_plan:"Pay with Razorpay",per_month:"/month",current:"Current",sample_note:"Sample shop data. Change it in More → Shop settings.",find_maps:"Find us on Google Maps",thank_you:"Thank you! Visit again",saved:"Saved",undo:"Undo",interstate:"Customer is in another state (IGST)",qty:"Qty",rate:"Rate",recovered:"Ledgro helped you collect {amt} this month",recent:"Recent activity",last7:"Last 7 days sales",share_report:"Share report on WhatsApp",new_product:"New product",product_name:"Product name",price:"Price (₹, before GST)",hsn:"HSN code",gst_rate:"GST rate",empty_cart:"Tap a product above to add it to the bill",choose_customer:"Choose customer",need_customer:"Choose a customer so this bill goes into their khata.",delete:"Delete",entry_deleted:"Entry deleted",reminder_lang:"Reminder language",invoice_no:"Invoice no.",date:"Date",in_words:"In words",round_off:"Round off",pay_upi_line:"Pay by UPI: {upi}",pdf_note:"In the live app this bill is sent as a PDF, and the Maps and Instagram links stay tappable.",close:"Close",activate_demo:"Activate plan (demo)",rzp_note:"In the live app, Razorpay Checkout opens here for UPI AutoPay, card or net banking.",reset:"Reset sample data",confirm_reset:"Erase all your entries and load the sample shop again?",yes_reset:"Yes, reset",walkin:"Walk-in customer",bills_used:"Bills this month: {n} / 300",active_plan:"Active plan: {p}",expense_cat:"Category",no_expenses:"No expenses added today",add:"Add",all_settled:"All settled",f_khata:"Khata + WhatsApp reminders",f_report:"Daily report",f_bill300:"GST billing (300 bills/month)",f_billunl:"Unlimited GST billing",f_stock:"Stock & low-stock alerts",f_auto:"Automatic reminders",f_pro:"Expiry, supplier khata, staff, CA reports",trial:"Free trial",no_bills:"No bills yet today",customer_opt:"Customer (optional)",show_bill:"View bill",entries:"Entries",bill_lang:"Bill language",reminder:"Dear {name}, ₹{amt} is pending at {shop}. Please pay by UPI to {upi}. Thank you!",cust_added:"Customer added",tag:"Smart khata for smart shops"},
+ta:{home:"முகப்பு",khata:"கணக்கு",bill:"பில்",reports:"அறிக்கை",more:"மேலும்",today_sales:"இன்றைய விற்பனை",outstanding:"வசூலிக்க வேண்டியது",cash:"ரொக்கம்",upi:"UPI",new_bill:"புதிய பில்",add_customer:"வாடிக்கையாளர் சேர்",customers:"வாடிக்கையாளர்கள்",gave_credit:"கடன் கொடுத்தேன்",got_payment:"பணம் வந்தது",send_reminder:"WhatsApp நினைவூட்டல் அனுப்பு",owes:"தர வேண்டியது",settled:"கணக்கு சரி",balance:"மீதம்",amount:"தொகை",note:"குறிப்பு",save:"சேமி",cancel:"ரத்து",search:"வாடிக்கையாளர் அல்லது பொருள் தேடு",items:"பொருட்கள்",total:"மொத்தம்",taxable:"வரிக்குட்பட்ட மதிப்பு",make_bill:"சேமித்து பில் பார்",share_whatsapp:"WhatsApp-ல் அனுப்பு",tax_invoice:"Tax Invoice",bill_supply:"Bill of Supply",bill_receipt:"பில்",customer_name:"வாடிக்கையாளர் பெயர்",phone:"கைபேசி எண்",pay_mode:"பணம் செலுத்தும் முறை",credit_mode:"கடன்",end_of_day:"இன்றைய கணக்கு அறிக்கை",collected_today:"இன்று வசூல்",given_today:"இன்று கொடுத்த கடன்",bills_today:"இன்றைய பில்கள்",top_items:"இன்று அதிகம் விற்றவை",expenses:"இன்றைய செலவுகள்",add_expense:"செலவு சேர்",shop_settings:"கடை அமைப்புகள்",shop_name:"கடை பெயர்",owner:"உரிமையாளர் பெயர்",address:"முகவரி",gst_status:"GST நிலை",gst_regular:"GST உள்ளது (Regular)",gst_comp:"Composition திட்டம்",gst_none:"GST இல்லை",gstin:"GSTIN",upi_id:"UPI ID",logo:"கடை லோகோ",maps_link:"Google Maps இணைப்பு",insta:"Instagram பெயர்",language:"மொழி",plans:"திட்டங்கள்",trial_left:"இலவச சோதனையில் {n} நாட்கள் மீதம்",choose_plan:"Razorpay மூலம் செலுத்து",per_month:"/மாதம்",current:"தற்போதைய",sample_note:"இது மாதிரி கடை தரவு. மேலும் → கடை அமைப்புகளில் மாற்றவும்.",find_maps:"Google Maps-ல் எங்களைக் காண",thank_you:"நன்றி! மீண்டும் வருக",saved:"சேமிக்கப்பட்டது",undo:"திரும்பப் பெறு",interstate:"வேறு மாநில வாடிக்கையாளர் (IGST)",qty:"அளவு",rate:"விலை",recovered:"இந்த மாதம் Ledgro மூலம் {amt} வசூலானது",recent:"சமீபத்தியவை",last7:"கடந்த 7 நாள் விற்பனை",share_report:"அறிக்கையை WhatsApp-ல் அனுப்பு",new_product:"புதிய பொருள்",product_name:"பொருள் பெயர்",price:"விலை (₹, GST இல்லாமல்)",hsn:"HSN குறியீடு",gst_rate:"GST விகிதம்",empty_cart:"பில்லில் சேர்க்க மேலே உள்ள பொருளைத் தொடவும்",choose_customer:"வாடிக்கையாளரைத் தேர்ந்தெடு",need_customer:"இந்த பில்லை கணக்கில் சேர்க்க வாடிக்கையாளரைத் தேர்ந்தெடுக்கவும்.",delete:"நீக்கு",entry_deleted:"பதிவு நீக்கப்பட்டது",reminder_lang:"நினைவூட்டல் மொழி",invoice_no:"பில் எண்",date:"தேதி",in_words:"எழுத்தில்",round_off:"முழுமையாக்கல்",pay_upi_line:"UPI மூலம் செலுத்த: {upi}",pdf_note:"நேரடி செயலியில் இந்த பில் PDF ஆக அனுப்பப்படும்; Maps, Instagram இணைப்புகளைத் தொட்டுத் திறக்கலாம்.",close:"மூடு",activate_demo:"திட்டத்தை இயக்கு (டெமோ)",rzp_note:"நேரடி செயலியில் இங்கே Razorpay Checkout திறக்கும்: UPI AutoPay, கார்டு அல்லது நெட் பேங்கிங்.",reset:"மாதிரி தரவை மீட்டமை",confirm_reset:"எல்லா பதிவுகளையும் அழித்து மாதிரி கடையை மீண்டும் ஏற்றவா?",yes_reset:"ஆம், மீட்டமை",walkin:"நேரடி வாடிக்கையாளர்",bills_used:"இந்த மாத பில்கள்: {n} / 300",active_plan:"தற்போதைய திட்டம்: {p}",expense_cat:"வகை",no_expenses:"இன்று செலவு எதுவும் சேர்க்கவில்லை",add:"சேர்",all_settled:"எல்லாம் சரி",f_khata:"கணக்கு + WhatsApp நினைவூட்டல்",f_report:"தினசரி அறிக்கை",f_bill300:"GST பில் (மாதம் 300)",f_billunl:"அளவற்ற GST பில்",f_stock:"இருப்பு & குறைவு எச்சரிக்கை",f_auto:"தானியங்கி நினைவூட்டல்",f_pro:"காலாவதி, சப்ளையர் கணக்கு, ஊழியர், CA அறிக்கை",trial:"இலவச சோதனை",no_bills:"இன்று இன்னும் பில் இல்லை",customer_opt:"வாடிக்கையாளர் (விருப்பம்)",show_bill:"பில் பார்",entries:"பதிவுகள்",bill_lang:"பில் மொழி",reminder:"வணக்கம் {name}, {shop}-ல் ₹{amt} நிலுவையில் உள்ளது. UPI மூலம் {upi}-க்கு செலுத்தவும். நன்றி!",cust_added:"வாடிக்கையாளர் சேர்க்கப்பட்டார்",tag:"ஸ்மார்ட் கடைகளுக்கு ஸ்மார்ட் கணக்கு"},
+ml:{home:"ഹോം",khata:"കണക്ക്",bill:"ബിൽ",reports:"റിപ്പോർട്ട്",more:"കൂടുതൽ",today_sales:"ഇന്നത്തെ വിൽപ്പന",outstanding:"കിട്ടാനുള്ളത്",cash:"പണം",upi:"UPI",new_bill:"പുതിയ ബിൽ",add_customer:"ഉപഭോക്താവിനെ ചേർക്കുക",customers:"ഉപഭോക്താക്കൾ",gave_credit:"കടം കൊടുത്തു",got_payment:"പണം കിട്ടി",send_reminder:"WhatsApp ഓർമ്മപ്പെടുത്തൽ അയയ്ക്കുക",owes:"തരാനുള്ളത്",settled:"കണക്ക് തീർന്നു",balance:"ബാക്കി",amount:"തുക",note:"കുറിപ്പ്",save:"സേവ് ചെയ്യുക",cancel:"റദ്ദാക്കുക",search:"ഉപഭോക്താവിനെയോ സാധനമോ തിരയുക",items:"സാധനങ്ങൾ",total:"ആകെ",taxable:"നികുതി ബാധകമായ തുക",make_bill:"സേവ് ചെയ്ത് ബിൽ കാണുക",share_whatsapp:"WhatsApp-ൽ അയയ്ക്കുക",tax_invoice:"Tax Invoice",bill_supply:"Bill of Supply",bill_receipt:"ബിൽ",customer_name:"ഉപഭോക്താവിന്റെ പേര്",phone:"ഫോൺ നമ്പർ",pay_mode:"പണമടയ്ക്കൽ രീതി",credit_mode:"കടം",end_of_day:"ഇന്നത്തെ കണക്ക് റിപ്പോർട്ട്",collected_today:"ഇന്ന് കിട്ടിയത്",given_today:"ഇന്ന് കൊടുത്ത കടം",bills_today:"ഇന്നത്തെ ബില്ലുകൾ",top_items:"ഇന്ന് കൂടുതൽ വിറ്റവ",expenses:"ഇന്നത്തെ ചെലവുകൾ",add_expense:"ചെലവ് ചേർക്കുക",shop_settings:"കട ക്രമീകരണങ്ങൾ",shop_name:"കടയുടെ പേര്",owner:"ഉടമയുടെ പേര്",address:"വിലാസം",gst_status:"GST നില",gst_regular:"GST ഉണ്ട് (Regular)",gst_comp:"Composition സ്കീം",gst_none:"GST ഇല്ല",gstin:"GSTIN",upi_id:"UPI ID",logo:"കടയുടെ ലോഗോ",maps_link:"Google Maps ലിങ്ക്",insta:"Instagram പേര്",language:"ഭാഷ",plans:"പ്ലാനുകൾ",trial_left:"സൗജന്യ ട്രയലിൽ {n} ദിവസം ബാക്കി",choose_plan:"Razorpay വഴി അടയ്ക്കുക",per_month:"/മാസം",current:"നിലവിലുള്ളത്",sample_note:"ഇത് സാമ്പിൾ കട ഡാറ്റയാണ്. കൂടുതൽ → കട ക്രമീകരണങ്ങളിൽ മാറ്റുക.",find_maps:"Google Maps-ൽ ഞങ്ങളെ കണ്ടെത്തുക",thank_you:"നന്ദി! വീണ്ടും വരിക",saved:"സേവ് ചെയ്തു",undo:"പഴയപടിയാക്കുക",interstate:"മറ്റു സംസ്ഥാന ഉപഭോക്താവ് (IGST)",qty:"അളവ്",rate:"വില",recovered:"ഈ മാസം Ledgro വഴി {amt} പിരിച്ചെടുത്തു",recent:"സമീപകാല പ്രവർത്തനം",last7:"കഴിഞ്ഞ 7 ദിവസത്തെ വിൽപ്പന",share_report:"റിപ്പോർട്ട് WhatsApp-ൽ അയയ്ക്കുക",new_product:"പുതിയ സാധനം",product_name:"സാധനത്തിന്റെ പേര്",price:"വില (₹, GST ഇല്ലാതെ)",hsn:"HSN കോഡ്",gst_rate:"GST നിരക്ക്",empty_cart:"ബില്ലിൽ ചേർക്കാൻ മുകളിലെ സാധനത്തിൽ തൊടുക",choose_customer:"ഉപഭോക്താവിനെ തിരഞ്ഞെടുക്കുക",need_customer:"ഈ ബിൽ കണക്കിൽ ചേർക്കാൻ ഉപഭോക്താവിനെ തിരഞ്ഞെടുക്കുക.",delete:"ഇല്ലാതാക്കുക",entry_deleted:"എൻട്രി ഇല്ലാതാക്കി",reminder_lang:"ഓർമ്മപ്പെടുത്തൽ ഭാഷ",invoice_no:"ബിൽ നമ്പർ",date:"തീയതി",in_words:"അക്ഷരത്തിൽ",round_off:"റൗണ്ട് ഓഫ്",pay_upi_line:"UPI വഴി അടയ്ക്കാൻ: {upi}",pdf_note:"ലൈവ് ആപ്പിൽ ഈ ബിൽ PDF ആയി അയയ്ക്കും; Maps, Instagram ലിങ്കുകൾ തൊട്ട് തുറക്കാം.",close:"അടയ്ക്കുക",activate_demo:"പ്ലാൻ സജീവമാക്കുക (ഡെമോ)",rzp_note:"ലൈവ് ആപ്പിൽ ഇവിടെ Razorpay Checkout തുറക്കും: UPI AutoPay, കാർഡ് അല്ലെങ്കിൽ നെറ്റ് ബാങ്കിംഗ്.",reset:"സാമ്പിൾ ഡാറ്റ പുനഃസജ്ജമാക്കുക",confirm_reset:"എല്ലാ എൻട്രികളും മായ്ച്ച് സാമ്പിൾ കട വീണ്ടും ലോഡ് ചെയ്യണോ?",yes_reset:"അതെ, പുനഃസജ്ജമാക്കുക",walkin:"നേരിട്ടുള്ള ഉപഭോക്താവ്",bills_used:"ഈ മാസത്തെ ബില്ലുകൾ: {n} / 300",active_plan:"നിലവിലെ പ്ലാൻ: {p}",expense_cat:"വിഭാഗം",no_expenses:"ഇന്ന് ചെലവൊന്നും ചേർത്തിട്ടില്ല",add:"ചേർക്കുക",all_settled:"എല്ലാം തീർന്നു",f_khata:"കണക്ക് + WhatsApp ഓർമ്മപ്പെടുത്തൽ",f_report:"ദിവസ റിപ്പോർട്ട്",f_bill300:"GST ബിൽ (മാസം 300)",f_billunl:"പരിധിയില്ലാത്ത GST ബിൽ",f_stock:"സ്റ്റോക്ക് & കുറവ് മുന്നറിയിപ്പ്",f_auto:"ഓട്ടോമാറ്റിക് ഓർമ്മപ്പെടുത്തൽ",f_pro:"കാലാവധി, സപ്ലയർ കണക്ക്, സ്റ്റാഫ്, CA റിപ്പോർട്ട്",trial:"സൗജന്യ ട്രയൽ",no_bills:"ഇന്ന് ഇതുവരെ ബില്ലില്ല",customer_opt:"ഉപഭോക്താവ് (ഐച്ഛികം)",show_bill:"ബിൽ കാണുക",entries:"എൻട്രികൾ",bill_lang:"ബിൽ ഭാഷ",reminder:"നമസ്കാരം {name}, {shop}-ൽ ₹{amt} ബാക്കിയുണ്ട്. ദയവായി {upi} എന്ന UPI-യിലേക്ക് അടയ്ക്കുക. നന്ദി!",cust_added:"ഉപഭോക്താവിനെ ചേർത്തു",tag:"സ്മാർട്ട് കടകൾക്ക് സ്മാർട്ട് കണക്ക്"}
+};
+const LANGS=[["en","EN","English"],["ta","த","தமிழ்"],["ml","മ","മലയാളം"]];
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const dk=d=>{const x=new Date(d);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0")};
+const daysAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return dk(d)};
+const TODAY=dk(new Date());
+const inr=(n,dec)=>"₹"+Number(n||0).toLocaleString("en-IN",{minimumFractionDigits:dec?2:0,maximumFractionDigits:2});
+const nice=d=>new Date(d+"T00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short"});
+function tl(lang,k,v){let s=(T[lang]&&T[lang][k])??T.en[k]??k;if(v)for(const x in v)s=s.split("{"+x+"}").join(v[x]);return s}
+const t=(k,v)=>tl(S.shop.lang,k,v);
+const initials=s=>String(s||"?").split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+const ICON={
+ home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+ khata:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h11l3 3v15H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>',
+ bill:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+ reports:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+ more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c1.2-3.5 4-5 7-5s5.8 1.5 7 5"/></svg>',
+ wa:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg>',
+ pin:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+ ig:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>',
+ credit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>',
+ pay:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>'
+};
+
+/* Indian-system amount in words */
+function words(num){
+  num=Math.round(num);if(num===0)return"Zero";
+  const a=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+  const b=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+  const two=n=>n<20?a[n]:b[Math.floor(n/10)]+(n%10?" "+a[n%10]:"");
+  const three=n=>(n>=100?a[Math.floor(n/100)]+" Hundred"+(n%100?" ":""):"")+(n%100?two(n%100):"");
+  let out=[];const cr=Math.floor(num/1e7);num%=1e7;const lk=Math.floor(num/1e5);num%=1e5;const th=Math.floor(num/1e3);num%=1e3;
+  if(cr)out.push(three(cr)+" Crore");if(lk)out.push(two(lk)+" Lakh");if(th)out.push(two(th)+" Thousand");if(num)out.push(three(num));
+  return out.join(" ");
+}
+
+/* ---------- data ---------- */
+function seed(){
+  const P=[["Ponni Rice 5 kg",350,"1006",5],["Aashirvaad Atta 5 kg",285,"1101",5],["Sugar 1 kg",46,"1701",5],["Sunflower Oil 1 L",165,"1512",5],["Tata Salt 1 kg",28,"2501",0],["Aavin Milk 500 ml",22,"0401",0],["Bru Coffee 100 g",190,"2101",5],["Good Day Biscuit",30,"1905",5],["Colgate 100 g",58,"3306",5],["Lifebuoy Soap",38,"3401",5],["Surf Excel 1 kg",140,"3402",18],["Toor Dal 1 kg",160,"0713",5]]
+    .map(([name,price,hsn,gst])=>({id:uid(),name,price,hsn,gst}));
+  const C=[
+    {name:"Lakshmi R",phone:"9876500011",lang:"ta",e:[["credit",1200,12,"Monthly groceries"],["payment",500,6,"UPI"],["credit",340,0,"Rice, oil"]]},
+    {name:"Anwar S",phone:"9876500022",lang:"ml",e:[["credit",2500,20,"Festival order"],["payment",1000,3,"Cash"]]},
+    {name:"Priya M",phone:"9876500033",lang:"en",e:[["credit",640,2,"Milk & bread, week"]]},
+    {name:"Ravi Kumar",phone:"9876500044",lang:"ta",e:[["credit",900,9,""],["payment",900,1,"UPI"]]},
+    {name:"Joseph T",phone:"9876500055",lang:"ml",e:[["credit",1800,35,"Rice bags"],["payment",600,8,"Cash"]]}
+  ].map(c=>({id:uid(),name:c.name,phone:c.phone,lang:c.lang,entries:c.e.map(([type,amt,ago,note])=>({id:uid(),type,amt,date:daysAgo(ago),note}))}));
+  // deterministic sample bills over 7 days
+  let s=7;const rnd=()=>(s=(s*9301+49297)%233280)/233280;
+  const bills=[];let no=0;
+  for(let d=6;d>=0;d--){
+    const count=d===0?5:4+Math.floor(rnd()*4);
+    for(let i=0;i<count;i++){
+      const n=1+Math.floor(rnd()*4);const items=[];
+      for(let j=0;j<n;j++){const p=P[Math.floor(rnd()*P.length)];if(items.find(x=>x.pid===p.id))continue;items.push({pid:p.id,name:p.name,hsn:p.hsn,gst:p.gst,qty:1+Math.floor(rnd()*3),rate:p.price})}
+      no++;bills.push({id:uid(),no,date:daysAgo(d),items,cust:"",phone:"",inter:false,mode:rnd()>0.45?"upi":"cash",gt:"regular"});
+    }
+  }
+  return{
+    shop:{name:"Sri Murugan Stores",owner:"K. Murugan",phone:"98430 12345",address:"14, Gandhipuram 2nd Street, Coimbatore 641012",state:"Tamil Nadu",gstType:"regular",gstin:"33ABCDE1234F1Z5",upi:"srimurugan@okaxis",logo:"",maps:"https://maps.google.com/?q=Gandhipuram,Coimbatore",insta:"srimuruganstores",lang:"en",billLang:"en"},
+    products:P,customers:C,bills,
+    expenses:[{id:uid(),date:TODAY,amt:450,cat:"Electricity"},{id:uid(),date:TODAY,amt:120,cat:"Tea & snacks"}],
+    plan:{name:"trial",trialEnd:daysAgo(-18)},sample:true
+  };
+}
+let S=null;
+let view="home";
+let draft={items:[],cust:"",phone:"",custId:"",inter:false,mode:"cash"};
+let q="";
+
+/* ---------- calculations ---------- */
+const bal=c=>c.entries.reduce((s,e)=>s+(e.type==="credit"?e.amt:-e.amt),0);
+function calc(b){
+  const gt=b.gt||S.shop.gstType;let taxable=0,tax=0;const lines=b.items.map(it=>{
+    const val=it.qty*it.rate;const tx=gt==="regular"?val*it.gst/100:0;taxable+=val;tax+=tx;return{...it,val,tx}});
+  const raw=taxable+tax;const total=Math.round(raw);
+  return{lines,taxable,tax,cgst:gt==="regular"&&!b.inter?tax/2:0,sgst:gt==="regular"&&!b.inter?tax/2:0,igst:gt==="regular"&&b.inter?tax:0,round:total-raw,total,gt};
+}
+function fy(date){const d=new Date(date+"T00:00");const y=d.getMonth()>=3?d.getFullYear():d.getFullYear()-1;return y+"-"+String((y+1)%100).padStart(2,"0")}
+const invNo=b=>initials(S.shop.name).slice(0,3)+"/"+fy(b.date)+"/"+String(b.no).padStart(4,"0");
+function dayStats(day){
+  const bills=S.bills.filter(b=>b.date===day);let sales=0,cash=0,upi=0;
+  bills.forEach(b=>{const tt=calc(b).total;sales+=tt;if(b.mode==="cash")cash+=tt;else if(b.mode==="upi")upi+=tt});
+  let given=0,got=0;S.customers.forEach(c=>c.entries.forEach(e=>{if(e.date===day){if(e.type==="credit")given+=e.amt;else got+=e.amt}}));
+  const exp=S.expenses.filter(e=>e.date===day).reduce((s,e)=>s+e.amt,0);
+  return{bills,sales,cash,upi,given,got,exp};
+}
+const outstanding=()=>S.customers.reduce((s,c)=>s+Math.max(0,bal(c)),0);
+function monthCollected(){const m=TODAY.slice(0,7);let s=0;S.customers.forEach(c=>c.entries.forEach(e=>{if(e.type==="payment"&&e.date.slice(0,7)===m)s+=e.amt}));return s}
+
+/* ---------- render ---------- */
+function render(){
+  if(!S)return;
+  document.documentElement.lang=S.shop.lang;
+  const sh=S.shop;
+  $("#app").innerHTML=`
+  <header class="top">
+    <div class="mark">${sh.logo?`<img src="${sh.logo}" alt="">`:esc(initials(sh.name))}</div>
+    <div class="who"><b>${esc(sh.name)}</b><small>Ledgro · ${esc(t("tag"))}</small></div>
+    <div class="langs" role="group" aria-label="${esc(t("language"))}">${LANGS.map(([c,s,n])=>`<button data-lang="${c}" title="${n}" aria-pressed="${sh.lang===c}">${s}</button>`).join("")}</div>
+  </header>
+  <main id="main">${VIEWS[view]()}</main>
+  <nav class="tabs" aria-label="Main"><div class="in">
+    ${["home","khata","bill","reports","more"].map(v=>v==="bill"
+      ?`<button class="mid" data-view="bill" ${view==="bill"?'aria-current="page"':""}><span class="dot">${ICON.bill}</span>${esc(t("bill"))}</button>`
+      :`<button data-view="${v}" ${view===v?'aria-current="page"':""}>${ICON[v]}${esc(t(v))}</button>`).join("")}
+  </div></nav>`;
+  bindView();
+}
+function go(v){view=v;render();window.scrollTo(0,0)}
+
+const VIEWS={
+home(){
+  const st=dayStats(TODAY);const out=outstanding();const rec=monthCollected();
+  const acts=[];
+  S.customers.forEach(c=>c.entries.forEach(e=>acts.push({d:e.date,ts:e.date+e.id,label:c.name,sub:e.type==="credit"?t("gave_credit"):t("got_payment"),amt:e.amt,cls:e.type==="credit"?"owe":"paid",cid:c.id})));
+  S.bills.slice(-6).forEach(b=>acts.push({d:b.date,ts:b.date+"z"+String(b.no).padStart(5,"0"),label:invNo(b),sub:(b.cust||t("walkin"))+" · "+(b.mode==="cash"?t("cash"):b.mode==="upi"?"UPI":t("credit_mode")),amt:calc(b).total,cls:"",bid:b.id}));
+  acts.sort((a,b)=>a.ts<b.ts?1:-1);
+  return `
+  ${S.sample?`<div class="note">${esc(t("sample_note"))}</div>`:""}
+  ${nudgeHTML()}
+  <div class="tiles">
+    <div class="tile hero"><div class="lbl">${esc(t("today_sales"))} · ${nice(TODAY)}</div><div class="val num">${inr(st.sales)}</div>
+      <div class="split num"><span>${esc(t("cash"))} ${inr(st.cash)}</span><span>UPI ${inr(st.upi)}</span><span>${st.bills.length} ${esc(t("bills_today"))}</span></div></div>
+    <div class="tile"><div class="lbl">${esc(t("outstanding"))}</div><div class="val num owe">${inr(out)}</div></div>
+    <div class="tile"><div class="lbl">${esc(t("collected_today"))}</div><div class="val num paid">${inr(st.got)}</div></div>
+  </div>
+  ${rec?`<div class="banner"><span style="font-size:22px">₹</span><span>${t("recovered",{amt:"<b class='num'>"+inr(rec)+"</b>"})}</span></div>`:""}
+  <div class="quick">
+    <button class="btn primary" data-go="bill">${ICON.bill}${esc(t("new_bill"))}</button>
+    <button class="btn" data-act="addcust">${ICON.more}${esc(t("add_customer"))}</button>
+    <button class="btn" data-go="reports">${ICON.reports}${esc(t("end_of_day"))}</button>
+  </div>
+  <section class="card"><div class="sec-h"><h2>${esc(t("recent"))}</h2></div>
+    <div class="list">${acts.slice(0,7).map(a=>`<button class="item" ${a.cid?`data-cust="${a.cid}"`:`data-bill="${a.bid}"`}>
+      <div class="main"><b>${esc(a.label)}</b><small>${esc(a.sub)} · ${nice(a.d)}</small></div>
+      <div class="amt num ${a.cls}">${inr(a.amt)}</div></button>`).join("")}</div></section>`;
+},
+khata(){
+  const list=S.customers.filter(c=>!q||c.name.toLowerCase().includes(q.toLowerCase())||c.phone.includes(q)).sort((a,b)=>bal(b)-bal(a));
+  return `
+  <div class="tiles"><div class="tile hero"><div class="lbl">${esc(t("outstanding"))}</div><div class="val num">${inr(outstanding())}</div>
+    <div class="split"><span>${S.customers.filter(c=>bal(c)>0).length} / ${S.customers.length} ${esc(t("customers"))}</span></div></div></div>
+  <div class="row"><input class="search" id="q" type="search" placeholder="${esc(t("search"))}" value="${esc(q)}" style="flex:1 1 200px"><button class="btn primary" data-act="addcust" style="flex:0 0 auto">+ ${esc(t("add_customer"))}</button></div>
+  <section class="card"><div class="list">${list.length?list.map(c=>{const b=bal(c);return`<button class="item" data-cust="${c.id}">
+    <div class="av">${esc(initials(c.name))}</div>
+    <div class="main"><b>${esc(c.name)}</b><small class="num">${esc(c.phone)} · ${LANGS.find(l=>l[0]===c.lang)[2]}</small></div>
+    <div class="amt num ${b>0?"owe":"paid"}">${b>0?inr(b):"✓"}<small>${b>0?esc(t("owes")):esc(t("settled"))}</small></div></button>`}).join(""):`<div class="empty">${esc(t("add_customer"))}</div>`}</div></section>`;
+},
+bill(){
+  const filt=S.products.filter(p=>!q||p.name.toLowerCase().includes(q.toLowerCase()));
+  const c=calc({...draft,gt:S.shop.gstType});
+  const gt=S.shop.gstType;
+  return `
+  <div class="sec-h"><h2>${esc(t("new_bill"))}</h2><small>${esc(gt==="regular"?t("tax_invoice"):gt==="composition"?t("bill_supply"):t("bill_receipt"))}</small></div>
+  <input class="search" id="q" type="search" placeholder="${esc(t("search"))}" value="${esc(q)}">
+  <div class="chips">${filt.map(p=>`<button class="chip" data-add="${p.id}">${esc(p.name)}<b class="num">${inr(p.price)}</b></button>`).join("")}<button class="chip" data-act="newprod">+ ${esc(t("new_product"))}</button></div>
+  <section class="card cart"><div class="sec-h"><h2>${esc(t("items"))}</h2><small>${draft.items.length}</small></div>
+    ${draft.items.length?draft.items.map((it,i)=>`<div class="line"><div style="min-width:0"><b>${esc(it.name)}</b><br><small class="num">${inr(it.rate)} · HSN ${esc(it.hsn)}${gt==="regular"?" · GST "+it.gst+"%":""}</small></div>
+      <div class="qty"><button data-qty="${i}" data-d="-1" aria-label="minus">−</button><span class="num">${it.qty}</span><button data-qty="${i}" data-d="1" aria-label="plus">+</button></div>
+      <b class="num">${inr(it.qty*it.rate)}</b></div>`).join(""):`<div class="empty">${esc(t("empty_cart"))}</div>`}
+    ${draft.items.length?`<div class="sum num" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
+      <span>${esc(t("taxable"))}</span><span>${inr(c.taxable,1)}</span>
+      ${gt==="regular"?(draft.inter?`<span>IGST</span><span>${inr(c.igst,1)}</span>`:`<span>CGST</span><span>${inr(c.cgst,1)}</span><span>SGST</span><span>${inr(c.sgst,1)}</span>`):""}
+      <span>${esc(t("round_off"))}</span><span>${inr(c.round,1)}</span>
+      <span class="grand">${esc(t("total"))}</span><span class="grand">${inr(c.total)}</span></div>`:""}
+  </section>
+  <section class="card" style="display:flex;flex-direction:column;gap:12px">
+    <div class="field"><label>${esc(t("pay_mode"))}</label><div class="seg">
+      ${[["cash",t("cash")],["upi","UPI"],["credit",t("credit_mode")]].map(([m,l])=>`<button data-mode="${m}" aria-pressed="${draft.mode===m}">${esc(l)}</button>`).join("")}</div></div>
+    ${draft.mode==="credit"?`<div class="field"><label for="bcust">${esc(t("choose_customer"))}</label><select id="bcust"><option value="">—</option>${S.customers.map(c=>`<option value="${c.id}" ${draft.custId===c.id?"selected":""}>${esc(c.name)}</option>`).join("")}</select></div>`
+    :`<div class="grid2"><div class="field"><label for="bname">${esc(t("customer_opt"))}</label><input id="bname" value="${esc(draft.cust)}"></div>
+      <div class="field"><label for="bphone">${esc(t("phone"))}</label><input id="bphone" inputmode="numeric" value="${esc(draft.phone)}"></div></div>`}
+    ${gt==="regular"?`<label class="check"><input type="checkbox" id="binter" ${draft.inter?"checked":""}> ${esc(t("interstate"))}</label>`:""}
+    <button class="btn primary block" data-act="savebill" ${draft.items.length?"":"disabled style='opacity:.5'"}>${esc(t("make_bill"))}</button>
+  </section>`;
+},
+reports(){
+  const st=dayStats(TODAY);
+  const days=[...Array(7)].map((_,i)=>daysAgo(6-i));const vals=days.map(d=>dayStats(d).sales);const mx=Math.max(...vals,1);
+  const top={};st.bills.forEach(b=>b.items.forEach(it=>{top[it.name]=(top[it.name]||0)+it.qty}));
+  const topL=Object.entries(top).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const exps=S.expenses.filter(e=>e.date===TODAY);
+  return `
+  <div class="sec-h"><h2>${esc(t("end_of_day"))}</h2><small>${nice(TODAY)}</small></div>
+  <div class="tiles">
+    <div class="tile hero"><div class="lbl">${esc(t("today_sales"))}</div><div class="val num">${inr(st.sales)}</div>
+      <div class="split num"><span>${esc(t("cash"))} ${inr(st.cash)}</span><span>UPI ${inr(st.upi)}</span></div></div>
+    <div class="tile"><div class="lbl">${esc(t("given_today"))}</div><div class="val num owe">${inr(st.given)}</div></div>
+    <div class="tile"><div class="lbl">${esc(t("collected_today"))}</div><div class="val num paid">${inr(st.got)}</div></div>
+    <div class="tile"><div class="lbl">${esc(t("outstanding"))}</div><div class="val num">${inr(outstanding())}</div></div>
+    <div class="tile"><div class="lbl">${esc(t("expenses"))}</div><div class="val num">${inr(st.exp)}</div></div>
+  </div>
+  <a class="btn brand block" target="_blank" rel="noopener" href="${waLink("",reportText(st))}">${ICON.wa.replace("<svg",'<svg width="20" height="20"')}${esc(t("share_report"))}</a>
+  <section class="card"><div class="sec-h"><h2>${esc(t("last7"))}</h2></div>
+    <div class="bars">${days.map((d,i)=>`<div class="bar ${d===TODAY?"today":""}"><i style="height:${Math.max(4,vals[i]/mx*100)}%"><em class="num">${vals[i]>=1000?(vals[i]/1000).toFixed(1)+"k":vals[i]}</em></i><span>${new Date(d+"T00:00").toLocaleDateString("en-IN",{weekday:"short"})}</span></div>`).join("")}</div></section>
+  <section class="card"><div class="sec-h"><h2>${esc(t("top_items"))}</h2></div>
+    <div class="list">${topL.length?topL.map(([n,qn])=>`<div class="item"><div class="main"><b>${esc(n)}</b></div><div class="amt num">${qn}</div></div>`).join(""):`<div class="empty">${esc(t("no_bills"))}</div>`}</div></section>
+  <section class="card"><div class="sec-h"><h2>${esc(t("expenses"))}</h2><button class="btn sm" data-act="addexp">+ ${esc(t("add_expense"))}</button></div>
+    <div class="list">${exps.length?exps.map(e=>`<div class="item"><div class="main"><b>${esc(e.cat)}</b></div><div class="amt num">${inr(e.amt)}</div></div>`).join(""):`<div class="empty">${esc(t("no_expenses"))}</div>`}</div></section>`;
+},
+more(){
+  const sh=S.shop;const left=Math.max(0,Math.ceil((new Date(S.plan.trialEnd)-new Date(TODAY))/864e5));
+  const mBills=S.bills.filter(b=>b.date.slice(0,7)===TODAY.slice(0,7)).length;
+  const plans=[["starter","Starter",199,["f_khata","f_report","f_bill300"]],["growth","Growth",399,["f_khata","f_report","f_billunl","f_stock","f_auto"]],["pro","Pro",499,["f_khata","f_billunl","f_stock","f_auto","f_pro"]]];
+  return `
+  <section class="card" style="display:flex;flex-direction:column;gap:14px">
+    <div class="sec-h"><h2>${esc(t("shop_settings"))}</h2></div>
+    <div style="display:flex;gap:14px;align-items:center">
+      <div class="mark" style="width:64px;height:64px;border-radius:14px;background:var(--brand);color:var(--brand-ink);font-size:24px">${sh.logo?`<img src="${sh.logo}" alt="">`:esc(initials(sh.name))}</div>
+      <div class="field" style="flex:1;min-width:0"><label for="slogo">${esc(t("logo"))}</label><input id="slogo" type="file" accept="image/*" style="padding:10px"></div>
+    </div>
+    ${fld("sname","shop_name",sh.name)}${fld("sowner","owner",sh.owner)}
+    <div class="grid2">${fld("sphone","phone",sh.phone,"tel")}${fld("supi","upi_id",sh.upi)}</div>
+    ${fld("saddr","address",sh.address)}
+    <div class="field"><label>${esc(t("gst_status"))}</label><div class="radio">
+      ${[["regular","gst_regular"],["composition","gst_comp"],["none","gst_none"]].map(([v,k])=>`<label><input type="radio" name="gst" value="${v}" ${sh.gstType===v?"checked":""}> ${esc(t(k))}</label>`).join("")}</div></div>
+    ${sh.gstType!=="none"?fld("sgstin","gstin",sh.gstin):""}
+    ${fld("smaps","maps_link",sh.maps,"url")}${fld("sinsta","insta",sh.insta)}
+    <div class="grid2">
+      <div class="field"><label for="slang">${esc(t("language"))}</label><select id="slang">${LANGS.map(([c,,n])=>`<option value="${c}" ${sh.lang===c?"selected":""}>${n}</option>`).join("")}</select></div>
+      <div class="field"><label for="sblang">${esc(t("bill_lang"))}</label><select id="sblang">${LANGS.map(([c,,n])=>`<option value="${c}" ${sh.billLang===c?"selected":""}>${n}</option>`).join("")}</select></div>
+    </div>
+    <button class="btn brand block" data-act="saveshop">${esc(t("save"))}</button>
+  </section>
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <div class="sec-h"><h2>${esc(t("plans"))}</h2><small class="num">${esc(t("bills_used",{n:mBills}))}</small></div>
+    ${S.plan.name==="trial"?`<div class="banner"><span>⏳</span><span>${esc(t("trial_left",{n:left}))}</span></div>`:`<div class="banner"><span>✓</span><span>${esc(t("active_plan",{p:S.plan.name[0].toUpperCase()+S.plan.name.slice(1)}))}</span></div>`}
+    <div class="plans">${plans.map(([id,name,price,fs])=>`<div class="plan ${S.plan.name===id?"cur":""}">
+      <header><b>${name}</b>${S.plan.name===id?`<span class="pill">${esc(t("current"))}</span>`:""}</header>
+      <div class="price num">₹${price}<small>${esc(t("per_month"))} · ₹${price*10}/yr</small></div>
+      <ul>${fs.map(f=>`<li>${esc(t(f))}</li>`).join("")}</ul>
+      ${S.plan.name===id?"":`<button class="btn primary block" data-plan="${id}" data-price="${price}" data-pname="${name}">${esc(t("choose_plan"))}</button>`}
+    </div>`).join("")}</div>
+  </section>
+  ${moreExtra()}`;
+}
+};
+const fld=(id,k,v,type)=>`<div class="field"><label for="${id}">${esc(t(k))}</label><input id="${id}" ${type?`type="${type}"`:""} value="${esc(v)}"></div>`;
+
+function waLink(phone,text){const p=String(phone||"").replace(/\D/g,"");return"https://wa.me/"+(p?(p.length===10?"91"+p:p):"")+"?text="+encodeURIComponent(text)}
+function reportText(st){return`${S.shop.name} · ${nice(TODAY)}\n${t("today_sales")}: ${inr(st.sales)}\n${t("cash")}: ${inr(st.cash)} | UPI: ${inr(st.upi)}\n${t("given_today")}: ${inr(st.given)}\n${t("collected_today")}: ${inr(st.got)}\n${t("outstanding")}: ${inr(outstanding())}\n${t("expenses")}: ${inr(st.exp)}\n— Ledgro`}
+
+/* ---------- events ---------- */
+function bindView(){
+  document.querySelectorAll("[data-lang]").forEach(b=>b.onclick=()=>{S.shop.lang=b.dataset.lang;persist();render()});
+  document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{q="";go(b.dataset.view)});
+  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{q="";go(b.dataset.go)});
+  document.querySelectorAll("[data-cust]").forEach(b=>b.onclick=()=>custSheet(b.dataset.cust));
+  document.querySelectorAll("[data-bill]").forEach(b=>b.onclick=()=>billSheet(b.dataset.bill));
+  const qi=$("#q");if(qi){qi.oninput=()=>{q=qi.value;const pos=qi.selectionStart;render();const n=$("#q");n.focus();n.setSelectionRange(pos,pos)}}
+  document.querySelectorAll("[data-act]").forEach(b=>b.onclick=()=>ACTS[b.dataset.act]());
+  document.querySelectorAll("[data-add]").forEach(b=>b.onclick=()=>{const p=S.products.find(x=>x.id===b.dataset.add);const ex=draft.items.find(x=>x.pid===p.id);
+    if(ex)ex.qty++;else draft.items.push({pid:p.id,name:p.name,hsn:p.hsn,gst:p.gst,qty:1,rate:p.price});render()});
+  document.querySelectorAll("[data-qty]").forEach(b=>b.onclick=()=>{const it=draft.items[+b.dataset.qty];it.qty+=+b.dataset.d;if(it.qty<=0)draft.items.splice(+b.dataset.qty,1);render()});
+  document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{draft.mode=b.dataset.mode;render()});
+  const bn=$("#bname");if(bn)bn.oninput=()=>draft.cust=bn.value;
+  const bp=$("#bphone");if(bp)bp.oninput=()=>draft.phone=bp.value;
+  const bc=$("#bcust");if(bc)bc.onchange=()=>draft.custId=bc.value;
+  const bi=$("#binter");if(bi)bi.onchange=()=>{draft.inter=bi.checked;render()};
+  document.querySelectorAll('input[name="gst"]').forEach(r=>r.onchange=()=>{S.shop.gstType=r.value;persist();render()});
+  const lg=$("#slogo");if(lg)lg.onchange=()=>{const f=lg.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>shrink(rd.result,v=>{S.shop.logo=v;persist();render();toast(t("saved"))});rd.readAsDataURL(f)};
+  document.querySelectorAll("[data-plan]").forEach(b=>b.onclick=()=>rzpSheet(b.dataset.plan,b.dataset.pname,+b.dataset.price));
+  bindExtra();
+}
+function shrink(src,cb){const im=new Image();im.onload=()=>{const c=document.createElement("canvas");const s=Math.min(1,160/Math.max(im.width,im.height));c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);cb(c.toDataURL("image/png"))};im.onerror=()=>cb(src);im.src=src}
+
+const ACTS={
+  addcust(){sheet(`<div class="sheet-h"><h3>${esc(t("add_customer"))}</h3><button class="x" data-close aria-label="${esc(t("close"))}">×</button></div>
+    ${fld("cname","customer_name","")}${fld("cphone","phone","","tel")}
+    <div class="field"><label for="clang">${esc(t("reminder_lang"))}</label><select id="clang">${LANGS.map(([c,,n])=>`<option value="${c}" ${S.shop.lang===c?"selected":""}>${n}</option>`).join("")}</select></div>
+    <button class="btn primary block" id="csave">${esc(t("save"))}</button>`,()=>{
+      $("#cname").focus();
+      $("#csave").onclick=()=>{const name=$("#cname").value.trim();if(!name){$("#cname").focus();return}
+        S.customers.push({id:uid(),name,phone:$("#cphone").value.replace(/\D/g,""),lang:$("#clang").value,entries:[]});persist();close();render();toast(t("cust_added"))}});},
+  newprod(){sheet(`<div class="sheet-h"><h3>${esc(t("new_product"))}</h3><button class="x" data-close aria-label="${esc(t("close"))}">×</button></div>
+    ${fld("pname","product_name","")}<div class="grid2">${fld("pprice","price","","number")}${fld("phsn","hsn","")}</div>
+    <div class="field"><label for="pgst">${esc(t("gst_rate"))}</label><select id="pgst">${[0,5,18,40].map(r=>`<option value="${r}" ${r===5?"selected":""}>${r}%</option>`).join("")}</select></div>
+    <button class="btn primary block" id="psave">${esc(t("save"))}</button>`,()=>{$("#pname").focus();
+      $("#psave").onclick=()=>{const name=$("#pname").value.trim();const price=parseFloat($("#pprice").value);if(!name||!(price>0))return;
+        const p={id:uid(),name,price,hsn:$("#phsn").value.trim()||"—",gst:+$("#pgst").value};S.products.push(p);draft.items.push({pid:p.id,name:p.name,hsn:p.hsn,gst:p.gst,qty:1,rate:p.price});persist();close();render()}});},
+  savebill(){
+    if(!draft.items.length)return;
+    let cust=draft.cust,phone=draft.phone;
+    if(draft.mode==="credit"){const c=S.customers.find(x=>x.id===draft.custId);if(!c){toast(t("need_customer"));return}cust=c.name;phone=c.phone}
+    const no=(S.bills.reduce((m,b)=>Math.max(m,b.no),0))+1;
+    const b={id:uid(),no,date:TODAY,items:draft.items.map(x=>({...x})),cust,phone,inter:draft.inter,mode:draft.mode,gt:S.shop.gstType};
+    S.bills.push(b);
+    if(draft.mode==="credit"){const c=S.customers.find(x=>x.id===draft.custId);c.entries.push({id:uid(),type:"credit",amt:calc(b).total,date:TODAY,note:invNo(b)})}
+    draft={items:[],cust:"",phone:"",custId:"",inter:false,mode:"cash"};persist();render();billSheet(b.id);
+  },
+  addexp(){sheet(`<div class="sheet-h"><h3>${esc(t("add_expense"))}</h3><button class="x" data-close aria-label="${esc(t("close"))}">×</button></div>
+    <input class="keypad-amt num" id="eamt" inputmode="decimal" placeholder="₹0">
+    <div class="field"><label for="ecat">${esc(t("expense_cat"))}</label><select id="ecat">${["Purchase","Rent","Electricity","Salary","Transport","Tea & snacks","Other"].map(c=>`<option>${c}</option>`).join("")}</select></div>
+    <button class="btn primary block" id="esave">${esc(t("save"))}</button>`,()=>{$("#eamt").focus();
+      $("#esave").onclick=()=>{const a=parseFloat($("#eamt").value);if(!(a>0))return;S.expenses.push({id:uid(),date:TODAY,amt:a,cat:$("#ecat").value});persist();close();render();toast(t("saved"))}});},
+  saveshop(){const g=id=>$("#"+id)?$("#"+id).value.trim():undefined;const sh=S.shop;
+    sh.name=g("sname")||sh.name;sh.owner=g("sowner");sh.phone=g("sphone");sh.upi=g("supi");sh.address=g("saddr");
+    if(g("sgstin")!==undefined)sh.gstin=g("sgstin").toUpperCase();
+    const m=g("smaps");sh.maps=m&&!/^https?:\/\//.test(m)?"https://"+m:m;
+    sh.insta=(g("sinsta")||"").replace(/^@/,"").replace(/\s/g,"");sh.lang=g("slang");sh.billLang=g("sblang");S.sample=false;persist();render();toast(t("saved"))},
+  reset(){sheet(`<div class="sheet-h"><h3>${esc(t("reset"))}</h3><button class="x" data-close aria-label="${esc(t("close"))}">×</button></div>
+    <p style="margin:0">${esc(t("confirm_reset"))}</p><div class="row"><button class="btn" data-close>${esc(t("cancel"))}</button><button class="btn owe" id="rok">${esc(t("yes_reset"))}</button></div>`,()=>{
+      $("#rok").onclick=()=>{const lang=S.shop.lang;S=seed();S.shop.lang=lang;draft={items:[],cust:"",phone:"",custId:"",inter:false,mode:"cash"};persist();close();go("home")}});}
+};
+
+/* ---------- sheets ---------- */
+function sheet(html,mount){
+  $("#layer").innerHTML=`<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div></div>`;
+  $("#scrim").onclick=e=>{if(e.target.id==="scrim")close()};
+  document.querySelectorAll("#layer [data-close]").forEach(b=>b.onclick=close);
+  mount&&mount();
+}
+function close(){$("#layer").innerHTML=""}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")close()});
+
+function custSheet(id){
+  const c=S.customers.find(x=>x.id===id);if(!c)return;const b=bal(c);
+  const msg=tl(c.lang,"reminder",{name:c.name,amt:b.toLocaleString("en-IN"),shop:S.shop.name,upi:S.shop.upi});
+  const ents=[...c.entries].sort((a,b)=>a.date<b.date?1:-1);
+  sheet(`<div class="sheet-h"><div style="display:flex;gap:10px;align-items:center;min-width:0"><div class="av">${esc(initials(c.name))}</div><div style="min-width:0"><h3>${esc(c.name)}</h3><small class="num" style="color:var(--muted)">${esc(c.phone)}</small></div></div><button class="x" data-close aria-label="${esc(t("close"))}">×</button></div>
+    <div class="big-bal"><div class="val num ${b>0?"owe":"paid"}">${b>0?inr(b):inr(0)}</div><small>${b>0?esc(t("owes")):esc(t("all_settled"))}</small></div>
+    <div class="row"><button class="btn owe" id="gcredit">${ICON.credit.replace("<svg",'<svg width="20" height="20"')}${esc(t("gave_credit"))}</button><button class="btn paid" id="gpay">${ICON.pay.replace("<svg",'<svg width="20" height="20"')}${esc(t("got_payment"))}</button></div>
+    ${b>0?`<a class="btn brand block" target="_blank" rel="noopener" href="${waLink(c.phone,msg)}">${ICON.wa.replace("<svg",'<svg width="20" height="20"')}${esc(t("send_reminder"))}</a>
+      <div class="note">${esc(msg)}</div>`:""}
+    <div class="field"><label for="clang2">${esc(t("reminder_lang"))}</label><select id="clang2">${LANGS.map(([cc,,n])=>`<option value="${cc}" ${c.lang===cc?"selected":""}>${n}</option>`).join("")}</select></div>
+    <section class="card"><div class="sec-h"><h2>${esc(t("entries"))}</h2></div><div class="list">
+      ${ents.length?ents.map(e=>`<div class="item"><div class="main"><b class="${e.type==="credit"?"owe":"paid"}">${e.type==="credit"?esc(t("gave_credit")):esc(t("got_payment"))}</b><small>${nice(e.date)}${e.note?" · "+esc(e.note):""}</small></div>
+        <div class="amt num ${e.type==="credit"?"owe":"paid"}">${e.type==="credit"?"+":"−"}${inr(e.amt)}</div><button class="btn sm" data-del="${e.id}" aria-label="${esc(t("delete"))}">✕</button></div>`).join(""):`<div class="empty">—</div>`}</div></section>`,()=>{
+    $("#gcredit").onclick=()=>entrySheet(c,"credit");$("#gpay").onclick=()=>entrySheet(c,"payment");
+    $("#clang2").onchange=e=>{c.lang=e.target.value;persist();custSheet(id)};
+    document.querySelectorAll("[data-del]").forEach(btn=>btn.onclick=()=>{const i=c.entries.findIndex(x=>x.id===btn.dataset.del);const [rem]=c.entries.splice(i,1);persist();render();custSheet(id);
+      toast(t("entry_deleted"),()=>{c.entries.splice(i,0,rem);persist();render();custSheet(id)})});
+  });
+}
+function entrySheet(c,type){
+  sheet(`<div class="sheet-h"><h3 class="${type==="credit"?"owe":"paid"}">${esc(type==="credit"?t("gave_credit"):t("got_payment"))}</h3><button class="x" data-close aria-label="${esc(t("close"))}">×</button></div>
+    <small style="color:var(--muted)">${esc(c.name)}</small>
+    <input class="keypad-amt num" id="eamt" inputmode="decimal" placeholder="₹0" aria-label="${esc(t("amount"))}">
+    <div class="words" id="ewords"></div>
+    ${fld("enote","note","")}
+    <button class="btn primary block" id="esave">${esc(t("save"))}</button>`,()=>{
+    const a=$("#eamt");a.focus();a.oninput=()=>{const v=parseFloat(a.value);$("#ewords").textContent=v>0?"Rupees "+words(v)+" only":""};
+    $("#esave").onclick=()=>{const v=parseFloat(a.value);if(!(v>0)){a.focus();return}
+      c.entries.push({id:uid(),type,amt:Math.round(v*100)/100,date:TODAY,note:$("#enote").value.trim()});persist();render();custSheet(c.id);toast("✓ "+t("saved"))};
+  });
+}
+function invoiceHTML(b){
+  const sh=S.shop,c=calc(b),L=sh.billLang||"en",bt=k=>tl(L,k);
+  const title=c.gt==="regular"?bt("tax_invoice"):c.gt==="composition"?bt("bill_supply"):bt("bill_receipt");
+  return `<div class="inv">
+    <div class="ihead"><div class="ilogo">${sh.logo?`<img src="${sh.logo}" alt="">`:esc(initials(sh.name))}</div>
+      <div style="min-width:0"><h4>${esc(sh.name)}</h4><div class="muted">${esc(sh.address)}</div><div class="muted num">${esc(sh.phone)}${c.gt!=="none"&&sh.gstin?" · GSTIN "+esc(sh.gstin):""}</div></div></div>
+    <div class="ttl">${esc(title)}</div>
+    <div class="meta num"><span>${esc(bt("invoice_no"))}: <b>${esc(invNo(b))}</b></span><span>${esc(bt("date"))}: ${new Date(b.date+"T00:00").toLocaleDateString("en-IN")}</span></div>
+    <div class="meta"><span>${esc(b.cust||bt("walkin"))}${b.phone?" · "+esc(b.phone):""}</span><span>${c.gt==="regular"?(b.inter?"IGST":"CGST + SGST · "+esc(sh.state)):""}</span></div>
+    <div class="tblwrap"><table><thead><tr><th>${esc(bt("items"))}</th><th>HSN</th><th class="r">${esc(bt("qty"))}</th><th class="r">${esc(bt("rate"))}</th>${c.gt==="regular"?"<th class='r'>GST</th>":""}<th class="r">₹</th></tr></thead>
+      <tbody>${c.lines.map(l=>`<tr><td>${esc(l.name)}</td><td>${esc(l.hsn)}</td><td class="r">${l.qty}</td><td class="r">${l.rate.toFixed(2)}</td>${c.gt==="regular"?`<td class="r">${l.gst}%</td>`:""}<td class="r">${l.val.toFixed(2)}</td></tr>`).join("")}</tbody></table></div>
+    <div class="tot"><span>${esc(bt("taxable"))}</span><span>${c.taxable.toFixed(2)}</span>
+      ${c.gt==="regular"?(b.inter?`<span>IGST</span><span>${c.igst.toFixed(2)}</span>`:`<span>CGST</span><span>${c.cgst.toFixed(2)}</span><span>SGST</span><span>${c.sgst.toFixed(2)}</span>`):""}
+      <span>${esc(bt("round_off"))}</span><span>${c.round.toFixed(2)}</span>
+      <span class="g">${esc(bt("total"))}</span><span class="g">${inr(c.total,1)}</span></div>
+    <div class="muted" style="margin-top:6px;font-size:12px">${esc(bt("in_words"))}: Rupees ${words(c.total)} only</div>
+    <div class="foot">
+      ${b.mode==="credit"?`<b>${esc(bt("credit_mode"))}</b>`:`<span>${esc(bt("pay_mode"))}: <b>${b.mode==="cash"?esc(bt("cash")):"UPI"}</b></span>`}
+      ${sh.upi?`<span class="muted">${esc(tl(L,"pay_upi_line",{upi:sh.upi}))}</span>`:""}
+      ${sh.maps||sh.insta?`<div class="links">${sh.maps?`<a href="${esc(sh.maps)}" target="_blank" rel="noopener">${ICON.pin}${esc(bt("find_maps"))}</a>`:""}${sh.insta?`<a href="https://instagram.com/${encodeURIComponent(sh.insta)}" target="_blank" rel="noopener">${ICON.ig}@${esc(sh.insta)}</a>`:""}</div>`:""}
+      <b>${esc(bt("thank_you"))}</b>
+      <span class="muted" style="font-size:11px">Powered by Ledgro · ledgro.co.in</span>
+    </div></div>`;
+}
+function billSheet(id){
+  const b=S.bills.find(x=>x.id===id);if(!b)return;const c=calc(b);const sh=S.shop;
+  const txt=`${sh.name}\n${invNo(b)} · ${new Date(b.date+"T00:00").toLocaleDateString("en-IN")}\n`+c.lines.map(l=>`${l.name} x${l.qty} = ${inr(l.val+l.tx,1)}`).join("\n")+`\n${t("total")}: ${inr(c.total)}`+(sh.upi?`\nUPI: ${sh.upi}`:"")+(sh.maps?`\n${sh.maps}`:"")+(sh.insta?`\ninstagram.com/${sh.insta}`:"");
+  sheet(`<div class="sheet-h"><h3>${esc(t("show_bill"))}</h3><button class="x" data-close aria-label="${esc(t("close"))}">×</button></div>
+    ${invoiceHTML(b)}
+    <a class="btn brand block" target="_blank" rel="noopener" href="${waLink(b.phone,txt)}">${ICON.wa.replace("<svg",'<svg width="20" height="20"')}${esc(t("share_whatsapp"))}</a>
+    <div class="note">${esc(t("pdf_note"))}</div>`);
+}
+/* ================= Secure on-phone storage, PIN lock, backup, licence ================= */
+const CFG=window.LEDGRO_CONFIG||{};
+const LOGO="data:image/png;base64,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";
+const ITER=310000;
+const enc=new TextEncoder(),dec=new TextDecoder();
+const COMMON=[["Ponni Rice 5 kg",350,"1006",5],["Aashirvaad Atta 5 kg",285,"1101",5],["Sugar 1 kg",46,"1701",5],["Sunflower Oil 1 L",165,"1512",5],["Tata Salt 1 kg",28,"2501",0],["Aavin Milk 500 ml",22,"0401",0],["Bru Coffee 100 g",190,"2101",5],["Good Day Biscuit",30,"1905",5],["Colgate 100 g",58,"3306",5],["Lifebuoy Soap",38,"3401",5],["Surf Excel 1 kg",140,"3402",18],["Toor Dal 1 kg",160,"0713",5]];
+const STATES=["Tamil Nadu","Kerala","Karnataka","Andhra Pradesh","Telangana","Puducherry","Other"];
+
+const T2={
+en:{welcome_title:"Welcome to Ledgro",welcome_sub:"Your shop's khata, bills and reports. Encrypted and stored only on this phone.",setup_shop:"Set up my shop",try_sample:"Try with a sample shop",restore_backup:"Restore from backup",next:"Next",back:"Back",create_pin:"Create a 6-digit PIN",confirm_pin:"Enter the PIN again",pin_why:"Your data is locked with this PIN on this phone. Ledgro cannot see it or reset it, so keep a backup.",pin_mismatch:"PINs don't match. Try again.",pin_short:"Use exactly 6 digits.",enter_pin:"Enter your PIN",unlock:"Unlock",wrong_pin:"Wrong PIN. Try again.",wait_secs:"Too many tries. Wait {n} seconds.",forgot_pin:"Forgot PIN?",forgot_help:"Without the PIN this data can't be opened. Restore a backup, or erase this phone's data and start again.",erase_all:"Erase all data on this phone",erase_confirm:"This deletes your khata, bills and settings from this phone. Backups are not touched.",yes_erase:"Yes, erase",lock_now:"Lock now",security:"Security",encrypted_note:"Encrypted on this phone with AES-256. Only your PIN can open it.",change_pin:"Change PIN",current_pin:"Current PIN",new_pin:"New 6-digit PIN",auto_lock:"Auto-lock after",minutes:"{n} minutes",backup:"Backup",backup_drive:"Back up to Google Drive",restore_drive:"Restore from Google Drive",share_backup:"Share backup file (email, WhatsApp)",restore_file:"Restore from a backup file",last_backup:"Last backup: {t}",never:"never",backup_done:"Backup saved",backup_fail:"Backup failed. Check your internet and try again.",backup_nudge:"No backup in the last 24 hours. Back up now so you never lose your khata.",backup_pin:"Enter the PIN that was used when this backup was made",restored:"Backup restored",bad_file:"This isn't a Ledgro backup file.",no_drive_backup:"No Ledgro backup found in this Google account.",products:"Products",add_common:"Add 12 common kirana items",edit:"Edit",load_sample:"Load sample shop (for demos)",sample_confirm:"Replace this phone's data with the sample shop?",yes_replace:"Yes, replace",step:"Step {n} of 3",plan_wait:"Payment received. Activating your plan…",pay_fail:"Payment could not start. Check your internet and try again.",monthly:"Monthly",yearly:"Yearly",state:"State",drive_note:"Saved to your own Google Drive as an encrypted file. Ledgro never sees it.",backup_here:"Back up now",pin_changed:"PIN changed",shop_required:"Enter your shop name."},
+ta:{welcome_title:"Ledgro-க்கு வரவேற்கிறோம்",welcome_sub:"உங்கள் கடையின் கணக்கு, பில், அறிக்கை. இந்த போனில் மட்டும் பூட்டி சேமிக்கப்படும்.",setup_shop:"என் கடையை அமை",try_sample:"மாதிரி கடையுடன் முயற்சிக்கவும்",restore_backup:"காப்புப்பிரதியிலிருந்து மீட்டெடு",next:"அடுத்து",back:"பின்",create_pin:"6 இலக்க PIN உருவாக்கு",confirm_pin:"PIN-ஐ மீண்டும் உள்ளிடு",pin_why:"உங்கள் தரவு இந்த PIN மூலம் இந்த போனில் பூட்டப்படும். Ledgro அதைப் பார்க்கவோ மாற்றவோ முடியாது; எனவே காப்புப்பிரதி வைத்திருங்கள்.",pin_mismatch:"PIN பொருந்தவில்லை. மீண்டும் முயற்சிக்கவும்.",pin_short:"சரியாக 6 இலக்கங்கள் தேவை.",enter_pin:"உங்கள் PIN-ஐ உள்ளிடு",unlock:"திற",wrong_pin:"தவறான PIN. மீண்டும் முயற்சிக்கவும்.",wait_secs:"பல முறை தவறு. {n} விநாடி காத்திருக்கவும்.",forgot_pin:"PIN மறந்துவிட்டதா?",forgot_help:"PIN இல்லாமல் இந்த தரவைத் திறக்க முடியாது. காப்புப்பிரதியை மீட்டெடுக்கவும், அல்லது இந்த போனின் தரவை அழித்து மீண்டும் தொடங்கவும்.",erase_all:"இந்த போனில் உள்ள எல்லா தரவையும் அழி",erase_confirm:"இது இந்த போனில் உள்ள கணக்கு, பில், அமைப்புகளை அழிக்கும். காப்புப்பிரதிகள் பாதிக்கப்படாது.",yes_erase:"ஆம், அழி",lock_now:"இப்போது பூட்டு",security:"பாதுகாப்பு",encrypted_note:"இந்த போனில் AES-256 மூலம் பூட்டப்பட்டுள்ளது. உங்கள் PIN மட்டுமே திறக்கும்.",change_pin:"PIN மாற்று",current_pin:"தற்போதைய PIN",new_pin:"புதிய 6 இலக்க PIN",auto_lock:"தானாகப் பூட்டும் நேரம்",minutes:"{n} நிமிடம்",backup:"காப்புப்பிரதி",backup_drive:"Google Drive-ல் காப்புப்பிரதி",restore_drive:"Google Drive-லிருந்து மீட்டெடு",share_backup:"காப்புப்பிரதி கோப்பை அனுப்பு (மின்னஞ்சல், WhatsApp)",restore_file:"காப்புப்பிரதி கோப்பிலிருந்து மீட்டெடு",last_backup:"கடைசி காப்புப்பிரதி: {t}",never:"இல்லை",backup_done:"காப்புப்பிரதி சேமிக்கப்பட்டது",backup_fail:"காப்புப்பிரதி தோல்வி. இணையத்தைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.",backup_nudge:"கடந்த 24 மணி நேரத்தில் காப்புப்பிரதி இல்லை. உங்கள் கணக்கை இழக்காமல் இருக்க இப்போதே எடுங்கள்.",backup_pin:"இந்த காப்புப்பிரதி எடுத்தபோது பயன்படுத்திய PIN-ஐ உள்ளிடு",restored:"காப்புப்பிரதி மீட்டெடுக்கப்பட்டது",bad_file:"இது Ledgro காப்புப்பிரதி கோப்பு அல்ல.",no_drive_backup:"இந்த Google கணக்கில் Ledgro காப்புப்பிரதி இல்லை.",products:"பொருட்கள்",add_common:"12 பொதுவான கடைப் பொருட்களைச் சேர்",edit:"திருத்து",load_sample:"மாதிரி கடையை ஏற்று (டெமோவுக்கு)",sample_confirm:"இந்த போனின் தரவை மாதிரி கடையுடன் மாற்றவா?",yes_replace:"ஆம், மாற்று",step:"படி {n} / 3",plan_wait:"பணம் பெறப்பட்டது. உங்கள் திட்டம் இயக்கப்படுகிறது…",pay_fail:"பணம் செலுத்துதல் தொடங்கவில்லை. இணையத்தைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.",monthly:"மாதாந்திர",yearly:"ஆண்டு",state:"மாநிலம்",drive_note:"உங்கள் சொந்த Google Drive-ல் பூட்டிய கோப்பாக சேமிக்கப்படும். Ledgro அதைப் பார்க்காது.",backup_here:"இப்போது காப்புப்பிரதி எடு",pin_changed:"PIN மாற்றப்பட்டது",shop_required:"கடை பெயரை உள்ளிடவும்."},
+ml:{welcome_title:"Ledgro-ലേക്ക് സ്വാഗതം",welcome_sub:"നിങ്ങളുടെ കടയുടെ കണക്ക്, ബിൽ, റിപ്പോർട്ട്. ഈ ഫോണിൽ മാത്രം പൂട്ടി സൂക്ഷിക്കുന്നു.",setup_shop:"എന്റെ കട സജ്ജമാക്കുക",try_sample:"സാമ്പിൾ കട ഉപയോഗിച്ച് നോക്കുക",restore_backup:"ബാക്കപ്പിൽ നിന്ന് തിരികെ എടുക്കുക",next:"അടുത്തത്",back:"പിന്നോട്ട്",create_pin:"6 അക്ക PIN ഉണ്ടാക്കുക",confirm_pin:"PIN വീണ്ടും നൽകുക",pin_why:"നിങ്ങളുടെ ഡാറ്റ ഈ PIN കൊണ്ട് ഈ ഫോണിൽ പൂട്ടിയിരിക്കുന്നു. Ledgro-ക്ക് അത് കാണാനോ മാറ്റാനോ കഴിയില്ല; അതിനാൽ ബാക്കപ്പ് സൂക്ഷിക്കുക.",pin_mismatch:"PIN ഒത്തുപോകുന്നില്ല. വീണ്ടും ശ്രമിക്കുക.",pin_short:"കൃത്യം 6 അക്കങ്ങൾ വേണം.",enter_pin:"നിങ്ങളുടെ PIN നൽകുക",unlock:"തുറക്കുക",wrong_pin:"തെറ്റായ PIN. വീണ്ടും ശ്രമിക്കുക.",wait_secs:"നിരവധി തെറ്റുകൾ. {n} സെക്കൻഡ് കാത്തിരിക്കുക.",forgot_pin:"PIN മറന്നോ?",forgot_help:"PIN ഇല്ലാതെ ഈ ഡാറ്റ തുറക്കാനാകില്ല. ബാക്കപ്പ് തിരികെ എടുക്കുക, അല്ലെങ്കിൽ ഈ ഫോണിലെ ഡാറ്റ മായ്ച്ച് വീണ്ടും തുടങ്ങുക.",erase_all:"ഈ ഫോണിലെ എല്ലാ ഡാറ്റയും മായ്ക്കുക",erase_confirm:"ഇത് ഈ ഫോണിലെ കണക്ക്, ബിൽ, ക്രമീകരണങ്ങൾ മായ്ക്കും. ബാക്കപ്പുകൾക്ക് മാറ്റമില്ല.",yes_erase:"അതെ, മായ്ക്കുക",lock_now:"ഇപ്പോൾ പൂട്ടുക",security:"സുരക്ഷ",encrypted_note:"ഈ ഫോണിൽ AES-256 കൊണ്ട് പൂട്ടിയിരിക്കുന്നു. നിങ്ങളുടെ PIN-ന് മാത്രമേ തുറക്കാനാകൂ.",change_pin:"PIN മാറ്റുക",current_pin:"ഇപ്പോഴത്തെ PIN",new_pin:"പുതിയ 6 അക്ക PIN",auto_lock:"ഓട്ടോ-ലോക്ക് സമയം",minutes:"{n} മിനിറ്റ്",backup:"ബാക്കപ്പ്",backup_drive:"Google Drive-ൽ ബാക്കപ്പ്",restore_drive:"Google Drive-ൽ നിന്ന് തിരികെ എടുക്കുക",share_backup:"ബാക്കപ്പ് ഫയൽ അയയ്ക്കുക (ഇമെയിൽ, WhatsApp)",restore_file:"ബാക്കപ്പ് ഫയലിൽ നിന്ന് തിരികെ എടുക്കുക",last_backup:"അവസാന ബാക്കപ്പ്: {t}",never:"ഒരിക്കലുമില്ല",backup_done:"ബാക്കപ്പ് സേവ് ചെയ്തു",backup_fail:"ബാക്കപ്പ് പരാജയപ്പെട്ടു. ഇന്റർനെറ്റ് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.",backup_nudge:"കഴിഞ്ഞ 24 മണിക്കൂറിൽ ബാക്കപ്പ് ഇല്ല. കണക്ക് നഷ്ടപ്പെടാതിരിക്കാൻ ഇപ്പോൾ ബാക്കപ്പ് ചെയ്യുക.",backup_pin:"ഈ ബാക്കപ്പ് എടുത്തപ്പോഴുള്ള PIN നൽകുക",restored:"ബാക്കപ്പ് തിരികെ എടുത്തു",bad_file:"ഇത് Ledgro ബാക്കപ്പ് ഫയൽ അല്ല.",no_drive_backup:"ഈ Google അക്കൗണ്ടിൽ Ledgro ബാക്കപ്പ് ഇല്ല.",products:"സാധനങ്ങൾ",add_common:"12 സാധാരണ സാധനങ്ങൾ ചേർക്കുക",edit:"തിരുത്തുക",load_sample:"സാമ്പിൾ കട ലോഡ് ചെയ്യുക (ഡെമോയ്ക്ക്)",sample_confirm:"ഈ ഫോണിലെ ഡാറ്റ സാമ്പിൾ കടയാക്കി മാറ്റണോ?",yes_replace:"അതെ, മാറ്റുക",step:"ഘട്ടം {n} / 3",plan_wait:"പണം ലഭിച്ചു. നിങ്ങളുടെ പ്ലാൻ സജീവമാക്കുന്നു…",pay_fail:"പണമടയ്ക്കൽ തുടങ്ങാനായില്ല. ഇന്റർനെറ്റ് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.",monthly:"പ്രതിമാസം",yearly:"വാർഷികം",state:"സംസ്ഥാനം",drive_note:"നിങ്ങളുടെ സ്വന്തം Google Drive-ൽ പൂട്ടിയ ഫയലായി സൂക്ഷിക്കുന്നു. Ledgro അത് കാണില്ല.",backup_here:"ഇപ്പോൾ ബാക്കപ്പ് ചെയ്യുക",pin_changed:"PIN മാറ്റി",shop_required:"കടയുടെ പേര് നൽകുക."}
+};
+for(const l in T2)Object.assign(T[l],T2[l]);
+
+/* ---- IndexedDB key-value ---- */
+let _db;
+function idb(){if(_db)return Promise.resolve(_db);return new Promise((res,rej)=>{const r=indexedDB.open("ledgro",1);r.onupgradeneeded=()=>r.result.createObjectStore("kv");r.onsuccess=()=>{_db=r.result;res(_db)};r.onerror=()=>rej(r.error)})}
+async function kvGet(k){const db=await idb();return new Promise((res,rej)=>{const q=db.transaction("kv").objectStore("kv").get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
+async function kvSet(k,v){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
+async function kvDel(k){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction("kv","readwrite");tx.objectStore("kv").delete(k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
+
+/* ---- crypto ---- */
+function b64(u8){let s="";for(let i=0;i<u8.length;i+=0x8000)s+=String.fromCharCode.apply(null,u8.subarray(i,i+0x8000));return btoa(s)}
+function unb64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+async function deriveKey(pin,salt,iter){const base=await crypto.subtle.importKey("raw",enc.encode(pin),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:iter||ITER,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+let KEYC=null,SALT=null,META={};
+async function encryptState(){const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv},KEYC,enc.encode(JSON.stringify(S))));
+  return{app:"ledgro",v:1,kdf:"PBKDF2-SHA256",iter:ITER,salt:b64(SALT),iv:b64(iv),ct:b64(ct),saved:new Date().toISOString()}}
+async function decryptBlob(blob,pin){const salt=unb64(blob.salt);const key=await deriveKey(pin,salt,blob.iter);
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(blob.iv)},key,unb64(blob.ct));
+  return{state:JSON.parse(dec.decode(pt)),key,salt}}
+const isBlob=b=>b&&b.app==="ledgro"&&b.salt&&b.iv&&b.ct;
+async function saveMeta(){try{await kvSet("meta",META)}catch(e){}}
+let saveTimer=null;
+function persist(){clearTimeout(saveTimer);saveTimer=setTimeout(saveNow,300)}
+async function saveNow(){clearTimeout(saveTimer);if(!KEYC||!S)return;
+  try{const blob=await encryptState();await kvSet("vault",blob);
+    if(META.lang!==S.shop.lang){META.lang=S.shop.lang;saveMeta()}
+    autoBackup();
+  }catch(e){toast("Could not save on this phone. Free some storage and try again.")}}
+
+/* ---- boot / gates ---- */
+let OB={};
+async function boot(){
+  try{META=(await kvGet("meta"))||{}}catch(e){META={}}
+  if(!META.shopId){META.shopId=crypto.randomUUID?crypto.randomUUID():[...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,"0")).join("");META.autoLock=META.autoLock||5;saveMeta()}
+  let blob=null;try{blob=await kvGet("vault")}catch(e){}
+  if(isBlob(blob))showLock();else showWelcome();
+  if("serviceWorker" in navigator&&location.protocol==="https:"&&CFG.pwa)navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+const gl=k=>tl(OB.lang||META.lang||"en",k);
+function gate(html){close();document.documentElement.lang=OB.lang||META.lang||"en";$("#app").innerHTML=`<div class="gate">${html}</div>`}
+function showWelcome(){
+  OB={lang:META.lang||"en",gstType:"regular",state:"Tamil Nadu"};
+  const draw=()=>{gate(`
+    <img class="glogo" src="${LOGO}" alt="Ledgro by VJ Hokhmah">
+    <div><h1 class="gtitle">${esc(gl("welcome_title"))}</h1><p class="gsub">${esc(gl("welcome_sub"))}</p></div>
+    <div class="seg" role="group" aria-label="${esc(gl("language"))}">${LANGS.map(([c,,n])=>`<button data-l="${c}" aria-pressed="${OB.lang===c}">${n}</button>`).join("")}</div>
+    <div class="gbtns"><button class="btn primary block" id="w1">${esc(gl("setup_shop"))}</button>
+    <button class="btn block" id="w2">${esc(gl("try_sample"))}</button>
+    <button class="btn block" id="w3">${esc(gl("restore_backup"))}</button></div>
+    <p class="gfine">🔒 ${esc(gl("encrypted_note"))}</p>
+    <p class="gfine">Ledgro · VJ Hokhmah Pvt. Ltd.</p>`);
+    document.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{OB.lang=b.dataset.l;META.lang=OB.lang;saveMeta();draw()});
+    $("#w1").onclick=()=>{OB.sample=false;shopStep()};
+    $("#w2").onclick=()=>{OB.sample=true;pinStep()};
+    $("#w3").onclick=()=>restoreMenu(true);
+  };draw();
+}
+function shopStep(){
+  gate(`<div class="gstep">${esc(tl(OB.lang,"step",{n:2}).replace("{n}",2))}</div>
+    <h1 class="gtitle">${esc(gl("shop_settings"))}</h1>
+    <div class="field"><label for="oname">${esc(gl("shop_name"))}</label><input id="oname" value="${esc(OB.name||"")}"></div>
+    <div class="field"><label for="oowner">${esc(gl("owner"))}</label><input id="oowner" value="${esc(OB.owner||"")}"></div>
+    <div class="grid2"><div class="field"><label for="ophone">${esc(gl("phone"))}</label><input id="ophone" inputmode="numeric" value="${esc(OB.phone||"")}"></div>
+      <div class="field"><label for="ostate">${esc(gl("state"))}</label><select id="ostate">${STATES.map(s=>`<option ${OB.state===s?"selected":""}>${s}</option>`).join("")}</select></div></div>
+    <div class="field"><label for="oupi">${esc(gl("upi_id"))}</label><input id="oupi" value="${esc(OB.upi||"")}" placeholder="shopname@okaxis"></div>
+    <div class="field"><label>${esc(gl("gst_status"))}</label><div class="radio">
+      ${[["regular","gst_regular"],["composition","gst_comp"],["none","gst_none"]].map(([v,k])=>`<label><input type="radio" name="ogst" value="${v}" ${OB.gstType===v?"checked":""}> ${esc(gl(k))}</label>`).join("")}</div></div>
+    <div class="field" id="ogstinf" ${OB.gstType==="none"?"hidden":""}><label for="ogstin">${esc(gl("gstin"))}</label><input id="ogstin" value="${esc(OB.gstin||"")}" maxlength="15" style="text-transform:uppercase"></div>
+    <p class="err" id="oerr" hidden></p>
+    <div class="row"><button class="btn" id="oback">${esc(gl("back"))}</button><button class="btn primary" id="onext">${esc(gl("next"))}</button></div>`);
+  document.querySelectorAll('input[name="ogst"]').forEach(r=>r.onchange=()=>{OB.gstType=r.value;$("#ogstinf").hidden=r.value==="none"});
+  const grab=()=>{OB.name=$("#oname").value.trim();OB.owner=$("#oowner").value.trim();OB.phone=$("#ophone").value.replace(/\D/g,"").slice(-10);OB.state=$("#ostate").value;OB.upi=$("#oupi").value.trim();OB.gstin=($("#ogstin").value||"").trim().toUpperCase()};
+  $("#oback").onclick=()=>{grab();showWelcome()};
+  $("#onext").onclick=()=>{grab();if(!OB.name){$("#oerr").textContent=gl("shop_required");$("#oerr").hidden=false;$("#oname").focus();return}pinStep()};
+  $("#oname").focus();
+}
+function pinStep(){
+  gate(`<div class="gstep">${esc(tl(OB.lang,"step",{n:3}))}</div>
+    <h1 class="gtitle">${esc(gl("create_pin"))}</h1>
+    <p class="gsub">${esc(gl("pin_why"))}</p>
+    <div class="field"><label for="p1">${esc(gl("create_pin"))}</label><input id="p1" class="pinin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"></div>
+    <div class="field"><label for="p2">${esc(gl("confirm_pin"))}</label><input id="p2" class="pinin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"></div>
+    <p class="err" id="perr" hidden></p>
+    <div class="row"><button class="btn" id="pback">${esc(gl("back"))}</button><button class="btn primary" id="pgo">${esc(gl("unlock"))}</button></div>`);
+  $("#p1").focus();
+  $("#pback").onclick=()=>OB.sample?showWelcome():shopStep();
+  $("#pgo").onclick=async()=>{const a=$("#p1").value,b=$("#p2").value;const er=$("#perr");
+    if(!/^\d{6}$/.test(a)){er.textContent=gl("pin_short");er.hidden=false;return}
+    if(a!==b){er.textContent=gl("pin_mismatch");er.hidden=false;$("#p2").value="";$("#p2").focus();return}
+    $("#pgo").disabled=true;
+    S=OB.sample?seed():freshState();S.shop.lang=OB.lang;S.shop.billLang=OB.lang;
+    SALT=crypto.getRandomValues(new Uint8Array(16));KEYC=await deriveKey(a,SALT);
+    await saveNow();startIdle();view="home";render();};
+}
+function freshState(){return{shop:{name:OB.name,owner:OB.owner||"",phone:OB.phone||"",address:"",state:OB.state||"Tamil Nadu",gstType:OB.gstType,gstin:OB.gstType==="none"?"":OB.gstin||"",upi:OB.upi||"",logo:"",maps:"",insta:"",lang:OB.lang,billLang:OB.lang},
+  products:[],customers:[],bills:[],expenses:[],plan:{name:"trial",trialEnd:daysAgo(-30)},sample:false}}
+
+let fails=0,waitUntil=0;
+function showLock(){
+  OB={lang:META.lang||"en"};
+  gate(`<img class="glogo" src="${LOGO}" alt="Ledgro">
+    <h1 class="gtitle">${esc(gl("enter_pin"))}</h1>
+    <input id="lpin" class="pinin" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password" aria-label="${esc(gl("enter_pin"))}">
+    <p class="err" id="lerr" hidden></p>
+    <button class="btn primary block" id="lgo">${esc(gl("unlock"))}</button>
+    <button class="btn block" id="lforgot">${esc(gl("forgot_pin"))}</button>
+    <p class="gfine">🔒 ${esc(gl("encrypted_note"))}</p>`);
+  const inp=$("#lpin");inp.focus();
+  const go=async()=>{const er=$("#lerr");
+    if(Date.now()<waitUntil){er.textContent=gl("wait_secs").replace("{n}",Math.ceil((waitUntil-Date.now())/1000));er.hidden=false;return}
+    if(!/^\d{6}$/.test(inp.value)){er.textContent=gl("pin_short");er.hidden=false;return}
+    $("#lgo").disabled=true;
+    try{const blob=await kvGet("vault");const r=await decryptBlob(blob,inp.value);S=r.state;KEYC=r.key;SALT=r.salt;fails=0;startIdle();view="home";render();refreshLicense()}
+    catch(e){fails++;if(fails>=5)waitUntil=Date.now()+30000*(fails-4);er.textContent=gl("wrong_pin");er.hidden=false;inp.value="";inp.focus();$("#lgo").disabled=false}};
+  $("#lgo").onclick=go;inp.onkeydown=e=>{if(e.key==="Enter")go()};
+  $("#lforgot").onclick=()=>sheet(`<div class="sheet-h"><h3>${esc(gl("forgot_pin"))}</h3><button class="x" data-close aria-label="${esc(gl("close"))}">×</button></div>
+    <p style="margin:0">${esc(gl("forgot_help"))}</p>
+    <button class="btn block" id="fr">${esc(gl("restore_backup"))}</button>
+    <button class="btn owe block" id="fe">${esc(gl("erase_all"))}</button>`,()=>{$("#fr").onclick=()=>restoreMenu(true);$("#fe").onclick=eraseSheet});
+}
+function lockNow(){if(!S)return;saveNow().finally(()=>{S=null;KEYC=null;SALT=null;showLock()})}
+let lastActive=Date.now(),idleTimer=null;
+function startIdle(){lastActive=Date.now();clearInterval(idleTimer);idleTimer=setInterval(checkIdle,15000)}
+function checkIdle(){if(S&&Date.now()-lastActive>(META.autoLock||5)*60000)lockNow()}
+["pointerdown","keydown"].forEach(ev=>addEventListener(ev,()=>{lastActive=Date.now()},{passive:true}));
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){saveNow()}else checkIdle()});
+
+function eraseSheet(){sheet(`<div class="sheet-h"><h3>${esc(gl("erase_all"))}</h3><button class="x" data-close aria-label="${esc(gl("close"))}">×</button></div>
+  <p style="margin:0">${esc(gl("erase_confirm"))}</p>
+  <div class="row"><button class="btn" data-close>${esc(gl("cancel"))}</button><button class="btn owe" id="eok">${esc(gl("yes_erase"))}</button></div>`,()=>{
+  $("#eok").onclick=async()=>{clearTimeout(saveTimer);await kvDel("vault");S=null;KEYC=null;SALT=null;META.lastBackup=null;META.driveFileId=null;await saveMeta();showWelcome()}})}
+
+/* ---- restore ---- */
+function restoreMenu(fromGate){
+  sheet(`<div class="sheet-h"><h3>${esc(gl("restore_backup"))}</h3><button class="x" data-close aria-label="${esc(gl("close"))}">×</button></div>
+    ${CFG.googleClientId?`<button class="btn brand block" id="rd">${esc(gl("restore_drive"))}</button>`:""}
+    <button class="btn block" id="rf">${esc(gl("restore_file"))}</button>
+    <input type="file" id="rfile" accept=".ledgro,application/json" hidden>`,()=>{
+    $("#rf").onclick=()=>$("#rfile").click();
+    $("#rfile").onchange=async()=>{const f=$("#rfile").files[0];if(!f)return;try{const blob=JSON.parse(await f.text());if(!isBlob(blob))throw 0;askBackupPin(blob)}catch(e){toast(gl("bad_file"))}};
+    const rd=$("#rd");if(rd)rd.onclick=async()=>{try{const blob=await driveDownload();if(!blob){toast(gl("no_drive_backup"));return}askBackupPin(blob)}catch(e){toast(gl("backup_fail"))}};
+  });
+}
+function askBackupPin(blob){
+  sheet(`<div class="sheet-h"><h3>${esc(gl("restore_backup"))}</h3><button class="x" data-close aria-label="${esc(gl("close"))}">×</button></div>
+    <p style="margin:0">${esc(gl("backup_pin"))}</p>
+    <input id="bpin" class="pinin" type="password" inputmode="numeric" maxlength="6">
+    <p class="err" id="berr" hidden></p>
+    <button class="btn primary block" id="bgo">${esc(gl("unlock"))}</button>`,()=>{
+    $("#bpin").focus();
+    $("#bgo").onclick=async()=>{try{const r=await decryptBlob(blob,$("#bpin").value);S=r.state;KEYC=r.key;SALT=r.salt;await saveNow();startIdle();close();view="home";render();toast(t("restored"))}
+      catch(e){$("#berr").textContent=gl("wrong_pin");$("#berr").hidden=false}};
+  });
+}
+
+/* ---- backup: Google Drive (drive.file) + share file ---- */
+let gTok=null,gTokExp=0;
+function loadScript(src){return new Promise((res,rej)=>{if(document.querySelector(`script[src="${src}"]`))return res();const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s)})}
+async function getToken(){if(gTok&&Date.now()<gTokExp-60000)return gTok;
+  await loadScript("https://accounts.google.com/gsi/client");
+  return new Promise((res,rej)=>{const c=google.accounts.oauth2.initTokenClient({client_id:CFG.googleClientId,scope:"https://www.googleapis.com/auth/drive.file",
+    callback:r=>{if(r.error)return rej(r);gTok=r.access_token;gTokExp=Date.now()+r.expires_in*1000;res(gTok)},error_callback:rej});c.requestAccessToken({prompt:""})})}
+const BACKUP_NAME="Ledgro backup.ledgro";
+async function driveUpload(){
+  const tok=await getToken();const blob=await kvGet("vault");if(!isBlob(blob))return;
+  const bd="ledgro"+Date.now();const meta={name:BACKUP_NAME,mimeType:"application/json",description:"Encrypted Ledgro shop backup. Open Ledgro and choose Restore to use it."};
+  const body=`--${bd}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(META.driveFileId?{name:BACKUP_NAME}:meta)}\r\n--${bd}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(blob)}\r\n--${bd}--`;
+  const url=META.driveFileId?`https://www.googleapis.com/upload/drive/v3/files/${META.driveFileId}?uploadType=multipart`:"https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart";
+  const r=await fetch(url,{method:META.driveFileId?"PATCH":"POST",headers:{Authorization:"Bearer "+tok,"Content-Type":"multipart/related; boundary="+bd},body});
+  if(r.status===404&&META.driveFileId){META.driveFileId=null;return driveUpload()}
+  if(!r.ok)throw new Error("drive "+r.status);
+  const j=await r.json();META.driveFileId=j.id;META.lastBackup=Date.now();await saveMeta();
+}
+async function driveDownload(){
+  const tok=await getToken();
+  const q=encodeURIComponent(`name='${BACKUP_NAME}' and trashed=false`);
+  const r=await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&orderBy=modifiedTime%20desc&pageSize=1&fields=files(id,modifiedTime)`,{headers:{Authorization:"Bearer "+tok}});
+  if(!r.ok)throw new Error("list");const j=await r.json();if(!j.files||!j.files.length)return null;
+  const f=await fetch(`https://www.googleapis.com/drive/v3/files/${j.files[0].id}?alt=media`,{headers:{Authorization:"Bearer "+tok}});
+  if(!f.ok)throw new Error("get");META.driveFileId=j.files[0].id;saveMeta();const blob=await f.json();return isBlob(blob)?blob:null;
+}
+let lastAuto=0;
+function autoBackup(){ // silent while this session already holds a Drive token
+  if(!CFG.googleClientId||!gTok||Date.now()>=gTokExp-60000)return;
+  if(Date.now()-lastAuto<10*60000)return;lastAuto=Date.now();
+  driveUpload().then(()=>{if(view==="more"||view==="home")render()}).catch(()=>{});
+}
+async function shareBackup(){
+  await saveNow();const blob=await kvGet("vault");if(!isBlob(blob))return;
+  const name=`Ledgro-backup-${TODAY}.ledgro`;
+  const file=new File([JSON.stringify(blob)],name,{type:"application/json"});
+  try{
+    if(navigator.canShare&&navigator.canShare({files:[file]}))await navigator.share({files:[file],title:"Ledgro backup",text:"Encrypted Ledgro shop backup. Keep this file safe."});
+    else{const a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000)}
+    META.lastBackup=Date.now();await saveMeta();render();toast(t("backup_done"));
+  }catch(e){if(e&&e.name!=="AbortError")toast(t("backup_fail"))}
+}
+async function backupNow(){
+  if(CFG.googleClientId){try{await saveNow();await driveUpload();render();toast(t("backup_done"))}catch(e){toast(t("backup_fail"))}}
+  else shareBackup();
+}
+function nudgeHTML(){
+  if(S.sample)return"";
+  if(META.lastBackup&&Date.now()-META.lastBackup<864e5)return"";
+  return`<div class="banner warn"><span>☁</span><span style="flex:1">${esc(t("backup_nudge"))}</span><button class="btn sm brand" data-x="backupnow">${esc(t("backup_here"))}</button></div>`;
+}
+const when=ts=>ts?new Date(ts).toLocaleString("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}):t("never");
+
+/* ---- More: security, backup, products ---- */
+function moreExtra(){
+  return`
+  <section class="card" style="display:flex;flex-direction:column;gap:12px">
+    <div class="sec-h"><h2>${esc(t("backup"))}</h2><small>${esc(t("last_backup",{t:when(META.lastBackup)}))}</small></div>
+    ${CFG.googleClientId?`<button class="btn brand block" data-x="drive">${esc(t("backup_drive"))}</button><p class="hint">${esc(t("drive_note"))}</p>`:""}
+    <button class="btn block" data-x="share">${esc(t("share_backup"))}</button>
+    <button class="btn block" data-x="restore">${esc(t("restore_file"))}${CFG.googleClientId?" / Google Drive":""}</button>
+  </section>
+  <section class="card" style="display:flex;flex-direction:column;gap:12px">
+    <div class="sec-h"><h2>${esc(t("security"))}</h2></div>
+    <div class="banner"><span>🔒</span><span>${esc(t("encrypted_note"))}</span></div>
+    <div class="field"><label for="alock">${esc(t("auto_lock"))}</label><select id="alock">${[1,5,15,30].map(n=>`<option value="${n}" ${(META.autoLock||5)===n?"selected":""}>${esc(t("minutes",{n}))}</option>`).join("")}</select></div>
+    <div class="row"><button class="btn" data-x="pin">${esc(t("change_pin"))}</button><button class="btn" data-x="lock">${esc(t("lock_now"))}</button></div>
+  </section>
+  <section class="card"><div class="sec-h"><h2>${esc(t("products"))}</h2><button class="btn sm" data-act="newprod">+ ${esc(t("add"))}</button></div>
+    <div class="list">${S.products.length?S.products.map(p=>`<button class="item" data-prod="${p.id}"><div class="main"><b>${esc(p.name)}</b><small class="num">HSN ${esc(p.hsn)} · GST ${p.gst}%</small></div><div class="amt num">${inr(p.price)}</div></button>`).join(""):`<div class="empty"><button class="btn primary" data-x="common">${esc(t("add_common"))}</button></div>`}</div></section>
+  <button class="btn block" data-x="sample">${esc(t("load_sample"))}</button>
+  <button class="btn owe block" data-x="erase">${esc(t("erase_all"))}</button>
+  <p class="hint" style="text-align:center">Ledgro · VJ Hokhmah Pvt. Ltd.</p>`;
+}
+function bindExtra(){
+  const X={backupnow:backupNow,drive:backupNow,share:shareBackup,restore:()=>restoreMenu(false),lock:lockNow,erase:eraseSheet,
+    pin:changePinSheet,common:()=>{COMMON.forEach(([name,price,hsn,gst])=>S.products.push({id:uid(),name,price,hsn,gst}));persist();render()},
+    sample:()=>sheet(`<div class="sheet-h"><h3>${esc(t("load_sample"))}</h3><button class="x" data-close aria-label="${esc(t("close"))}">×</button></div>
+      <p style="margin:0">${esc(t("sample_confirm"))}</p><div class="row"><button class="btn" data-close>${esc(t("cancel"))}</button><button class="btn owe" id="sok">${esc(t("yes_replace"))}</button></div>`,
+      ()=>{$("#sok").onclick=()=>{const lang=S.shop.lang;S=seed();S.shop.lang=lang;persist();close();go("home")}})};
+  document.querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>X[b.dataset.x]&&X[b.dataset.x]());
+  const al=$("#alock");if(al)al.onchange=()=>{META.autoLock=+al.value;saveMeta()};
+  document.querySelectorAll("[data-prod]").forEach(b=>b.onclick=()=>editProd(b.dataset.prod));
+}
+function editProd(id){const p=S.products.find(x=>x.id===id);if(!p)return;
+  sheet(`<div class="sheet-h"><h3>${esc(t("edit"))}</h3><button class="x" data-close aria-label="${esc(t("close"))}">×</button></div>
+    ${fld("ename","product_name",p.name)}<div class="grid2">${fld("eprice","price",p.price,"number")}${fld("ehsn","hsn",p.hsn)}</div>
+    <div class="field"><label for="egst">${esc(t("gst_rate"))}</label><select id="egst">${[0,5,18,40].map(r=>`<option value="${r}" ${p.gst===r?"selected":""}>${r}%</option>`).join("")}</select></div>
+    <div class="row"><button class="btn owe" id="edel">${esc(t("delete"))}</button><button class="btn primary" id="esv">${esc(t("save"))}</button></div>`,()=>{
+    $("#esv").onclick=()=>{const name=$("#ename").value.trim(),price=parseFloat($("#eprice").value);if(!name||!(price>0))return;Object.assign(p,{name,price,hsn:$("#ehsn").value.trim()||"—",gst:+$("#egst").value});persist();close();render();toast(t("saved"))};
+    $("#edel").onclick=()=>{S.products=S.products.filter(x=>x.id!==id);persist();close();render()};});}
+function changePinSheet(){
+  sheet(`<div class="sheet-h"><h3>${esc(t("change_pin"))}</h3><button class="x" data-close aria-label="${esc(t("close"))}">×</button></div>
+    <div class="field"><label for="c0">${esc(t("current_pin"))}</label><input id="c0" class="pinin" type="password" inputmode="numeric" maxlength="6" autocomplete="current-password"></div>
+    <div class="field"><label for="c1">${esc(t("new_pin"))}</label><input id="c1" class="pinin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"></div>
+    <div class="field"><label for="c2">${esc(t("confirm_pin"))}</label><input id="c2" class="pinin" type="password" inputmode="numeric" maxlength="6" autocomplete="new-password"></div>
+    <p class="err" id="cerr" hidden></p><button class="btn primary block" id="cgo">${esc(t("save"))}</button>`,()=>{
+    $("#c0").focus();
+    $("#cgo").onclick=async()=>{const er=$("#cerr"),a=$("#c1").value,b=$("#c2").value;
+      try{await saveNow();await decryptBlob(await kvGet("vault"),$("#c0").value)}catch(e){er.textContent=t("wrong_pin");er.hidden=false;return}
+      if(!/^\d{6}$/.test(a)){er.textContent=t("pin_short");er.hidden=false;return}
+      if(a!==b){er.textContent=t("pin_mismatch");er.hidden=false;return}
+      SALT=crypto.getRandomValues(new Uint8Array(16));KEYC=await deriveKey(a,SALT);await saveNow();close();toast(t("pin_changed"))};});
+}
+
+/* ---- licence + Razorpay (server keeps only shop id + plan) ---- */
+const API=CFG.apiBase;
+async function refreshLicense(){if(API===undefined||!S)return;
+  try{const r=await fetch(`${API}/license?shop=${encodeURIComponent(META.shopId)}`);if(!r.ok)return;const j=await r.json();
+    if(j.status==="active"||j.status==="grace"){if(S.plan.name!==j.plan||S.plan.status!==j.status){S.plan={...S.plan,name:j.plan,billing:j.billing,status:j.status};persist();if(view==="more")render()}}
+    else if((j.status==="halted"||j.status==="cancelled")&&S.plan.name!=="trial"){S.plan={name:"trial",trialEnd:S.plan.trialEnd||TODAY,status:j.status};persist();render()}
+  }catch(e){}}
+function rzpSheet(id,name,price){
+  const live=API!==undefined&&CFG.razorpayKeyId;let billing="yearly";
+  const draw=()=>sheet(`<div class="sheet-h"><h3>Ledgro ${esc(name)}</h3><button class="x" data-close aria-label="${esc(t("close"))}">×</button></div>
+    <div class="seg">${["monthly","yearly"].map(b=>`<button data-b="${b}" aria-pressed="${billing===b}">${esc(t(b))}</button>`).join("")}</div>
+    <div class="card" style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between"><span>${esc(name)} · ${esc(t(billing))}</span><b class="num">₹${billing==="yearly"?(price*10).toLocaleString("en-IN"):price}</b></div>
+      <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:14px"><span>UPI AutoPay · Card · Net banking</span><span>Razorpay</span></div></div>
+    ${live?"":`<div class="note">${esc(t("rzp_note"))}</div>`}
+    <button class="btn primary block" id="rzok">${esc(live?t("choose_plan"):t("activate_demo"))}</button>`,()=>{
+    document.querySelectorAll("[data-b]").forEach(b=>b.onclick=()=>{billing=b.dataset.b;draw()});
+    $("#rzok").onclick=async()=>{
+      if(!live){if(API!==undefined){toast("Online payments open soon. Our team will activate your plan.");return}S.plan={...S.plan,name:id,billing};persist();close();render();toast("✓ "+name);return}
+      $("#rzok").disabled=true;
+      try{const r=await fetch(`${API}/subscribe`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({shop:META.shopId,plan:id,billing,phone:S.shop.phone})});
+        const j=await r.json();if(!r.ok||!j.subscription_id)throw new Error(j.error||"subscribe");
+        await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+        const rp=new Razorpay({key:CFG.razorpayKeyId,subscription_id:j.subscription_id,name:"Ledgro",description:`${name} plan (${billing})`,prefill:{contact:S.shop.phone},theme:{color:"#B91725"},
+          handler:()=>{close();toast(t("plan_wait"));let n=0;const iv=setInterval(()=>{n++;refreshLicense();if(n>=6||S?.plan?.name===id)clearInterval(iv)},4000)}});
+        rp.on("payment.failed",()=>toast(t("pay_fail")));rp.open();
+      }catch(e){toast(t("pay_fail"));const b=$("#rzok");if(b)b.disabled=false}};
+  });draw();
+}
+
+/* ---------- toast ---------- */
+let tt;
+function toast(msg,undo){
+  clearTimeout(tt);const el=document.createElement("div");el.className="toast";el.innerHTML=`<span>${esc(msg)}</span>${undo?`<button>${esc(t("undo"))}</button>`:""}`;
+  document.querySelectorAll(".toast").forEach(x=>x.remove());document.body.appendChild(el);
+  if(undo)el.querySelector("button").onclick=()=>{undo();el.remove()};
+  tt=setTimeout(()=>el.remove(),undo?5000:2200);
+}
+
+boot();
+</script>
+
+</body>
+</html>
